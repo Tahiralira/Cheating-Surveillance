@@ -8,15 +8,23 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
         }
         .output-container {
+            background-color: #fff;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h2 {
             margin-top: 0;
+            color: #333;
         }
         .key-combinations {
             margin-top: 10px;
@@ -25,6 +33,7 @@
         }
         .key-combination {
             margin-bottom: 5px;
+            color: #666;
         }
     </style>
 </head>
@@ -32,9 +41,9 @@
     <h1>Keylogger Output</h1>
     <div class="output-container">
         <h2>Summary</h2>
-        <p>Total Keystrokes: {{ '%.2f'|format(output.total_keystrokes) }}</p>
-        <p>Time Elapsed: {{ '%.2f'|format(output.time_elapsed) }} seconds</p>
-        <p>Average Typing Speed: {{ '%.2f'|format(output.average_typing_speed) }} characters per minute</p>
+        <p>Total Keystrokes: <strong>{{ '%.2f'|format(output.total_keystrokes) }}</strong></p>
+        <p>Time Elapsed: <strong>{{ '%.2f'|format(output.time_elapsed) }}</strong> seconds</p>
+        <p>Average Typing Speed: <strong>{{ '%.2f'|format(output.average_typing_speed) }}</strong> characters per minute</p>
     </div>
     <div class="output-container">
         <h2>Possible Cheating Behavior</h2>
