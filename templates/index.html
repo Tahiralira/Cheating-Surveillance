@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keylogger Output</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .output-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        .key-combinations {
+            margin-top: 10px;
+            list-style-type: none;
+            padding: 0;
+        }
+        .key-combination {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Keylogger Output</h1>
+    <div class="output-container">
+        <h2>Summary</h2>
+        <p>Total Keystrokes: {{ '%.2f'|format(output.total_keystrokes) }}</p>
+        <p>Time Elapsed: {{ '%.2f'|format(output.time_elapsed) }} seconds</p>
+        <p>Average Typing Speed: {{ '%.2f'|format(output.average_typing_speed) }} characters per minute</p>
+    </div>
+    <div class="output-container">
+        <h2>Possible Cheating Behavior</h2>
+        <ul class="key-combinations">
+            {% for i in output.answer %}
+            <li class="key-combination">{{ i }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
