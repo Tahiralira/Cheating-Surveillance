@@ -54,16 +54,25 @@ def analyze_keystrokes():
 
 
 def analyze_keystroke_patterns(keystroke_data):
-    # Calculate typing speed
+
+    # Add more analysis logic as needed
+
+    keystrokes = [keystroke.split(": ")[1] for keystroke in keystroke_data]
+    first = [item.split(" - ")[0].strip() for item in keystrokes]
     
-    keystroke_str = ' '.join([keystroke.split(": ")[1] for keystroke in keystroke_data])
+    keystroke_str = ' '.join(first)
     # Check for the sequence "Alt+Tab Ctrl+A Ctrl+C Alt+Tab Ctrl+V"
     sequence = "alt tab ctrl a ctrl c alt tab ctrl v"
     if sequence in keystroke_str:
         print("Sequence 'Alt+Tab Ctrl+A Ctrl+C Alt+Tab Ctrl+V' detected! Potential cheating behavior.")
-
-    # Add more analysis logic as needed
-
+        
+    sequence = "ctrl left windows right"
+    if sequence in keystroke_str:
+        print("Sequence 'Ctrl+Left Windows Right' detected! Potential cheating behavior.")
+        
+    sequence = "ctrl right windows left"
+    if sequence in keystroke_str:
+        print("Sequence 'Ctrl+right Windows Left' detected! Potential cheating behavior.")
 
 # Analyze keystrokes and print the results
 analysis_results = analyze_keystrokes()
