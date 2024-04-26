@@ -1,7 +1,6 @@
 import datetime
 
-# Path to the log file containing keystrokes with timestamps
-log_file = "keystroke_log.txt"
+log_file = "./Keylogger/keystroke_log.txt"
 
 
 def read_keystroke_data(file_path):
@@ -43,18 +42,18 @@ def analyze_keystrokes():
     average_typing_speed = total_keystrokes / time_elapsed
 
     # Analyze keystroke patterns
-    analyze_keystroke_patterns(keystroke_data)  # Remove the 'time_elapsed' argument
+    answer = analyze_keystroke_patterns(keystroke_data)  # Remove the 'time_elapsed' argument
 
     return {
         "total_keystrokes": total_keystrokes,
         "time_elapsed": time_elapsed,
         "average_typing_speed": average_typing_speed,
-        "key_combinations": key_combinations
+        "answer": answer
     }
 
 
 def analyze_keystroke_patterns(keystroke_data):
-
+    answer = []
     # Add more analysis logic as needed
 
     keystrokes = [keystroke.split(": ")[1] for keystroke in keystroke_data]
@@ -64,20 +63,24 @@ def analyze_keystroke_patterns(keystroke_data):
     # Check for the sequence "Alt+Tab Ctrl+A Ctrl+C Alt+Tab Ctrl+V"
     sequence = "alt tab ctrl a ctrl c alt tab ctrl v"
     if sequence in keystroke_str:
-        print("Sequence 'Alt+Tab Ctrl+A Ctrl+C Alt+Tab Ctrl+V' detected! Potential cheating behavior.")
+        answer.append("Sequence 'Alt+Tab Ctrl+A Ctrl+C Alt+Tab Ctrl+V' detected!")
         
     sequence = "ctrl left windows right"
     if sequence in keystroke_str:
-        print("Sequence 'Ctrl+Left Windows Right' detected! Potential cheating behavior.")
+        answer.append("Sequence 'Ctrl+Left Windows Right' detected!")
         
     sequence = "ctrl right windows left"
     if sequence in keystroke_str:
-        print("Sequence 'Ctrl+right Windows Left' detected! Potential cheating behavior.")
+        answer.append("Sequence 'Ctrl+right Windows Left' detected!")
+
+    return answer
+
 
 # Analyze keystrokes and print the results
 analysis_results = analyze_keystrokes()
-print("Total Keystrokes:", analysis_results["total_keystrokes"])
-print("Time Elapsed (minutes):", analysis_results["time_elapsed"])
-print("Average Typing Speed (keystrokes per minute):", analysis_results["average_typing_speed"])
-
-
+# print(f"Total Keystrokes: {analysis_results['total_keystrokes']:.2f}")
+# print(f"Time Elapsed (minutes): {analysis_results['time_elapsed']:.2f}")
+# print(f"Average Typing Speed (keystrokes per minute): {analysis_results['average_typing_speed']:.2f}")
+# print("Answers:")
+# for ans in analysis_results['answer']:
+#     print(ans)
