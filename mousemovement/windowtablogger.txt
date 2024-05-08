@@ -32,3 +32,24 @@ New Session Log
         log_file.write("\n\nNew Session\n\n")
 2024-04-28 08:24:26 - Switched to: ChatGPT - Opera
 2024-04-28 08:24:29 - Switched to: windowtablogger.txt - Cheating-Surveillance - Visual Studio Code
+
+
+
+
+New Session Log
+
+2024-04-28 08:41:10 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
+2024-04-28 08:41:10 - Clipboard: log_file_path = "windowtablogger.txt"
+    sessions = read_log_file(log_file_path)
+
+    # Print sessions and events within each session
+    for i, session in enumerate(sessions, start=1):
+        print(f"Session {i}:")
+        for j, event in enumerate(session, start=1):
+            print(f"  Event {j}:")
+            print(f"    Tab Change Before: {event.tab_change_before}")
+            print(f"    Clipboard Data: {event.clipboard_data}")
+            print(f"    Tab Change After: {event.tab_change_after}")
+2024-04-28 08:41:13 - Switched to: ChatGPT - Opera
+2024-04-28 08:41:17 - Clipboard: This code iterates
+2024-04-28 08:41:19 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
