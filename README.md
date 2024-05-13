@@ -55,6 +55,16 @@ This Cheating Surveillance System is designed to monitor user activities on a co
    - Open a web browser and navigate to `http://127.0.0.1:5000/` to view the interface.
 
 ### Usage
+
+
+To install the required dependencies, run the following command:
+
+```bash
+pip install -r requirements.txt
+```
+
+This command will install all the necessary packages listed in the `requirements.txt` file.
+
 - **View Logs:** Click on the respective buttons to load different types of logs (keyboard, mouse, webcam).
 - **Analyze Risk:** Click on the 'Analyze Logs' button to see the risk analysis based on the collected data.
 - **Submit Feedback:** Use the feedback form to submit your assessment of the risk level, which will help train the system.
