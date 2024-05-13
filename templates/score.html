@@ -1,67 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheating Score Analysis</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { font-family: 'Arial', sans-serif; padding: 20px; background-color: #f4f4f9; }
-        h1, h2 { color: #5D3FD3; }
-        .score { color: #ff4757; font-size: 24px; font-weight: bold; }
-        .log-list { background-color: #ffffff; border: 1px solid #ddd; margin-top: 20px; padding: 15px; }
-        .log-item { margin-bottom: 10px; }
-        .feedback-message {
-            position: fixed;
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: green;
-            background: white;
-            border: 1px solid #ddd;
-            padding: 10px;
-            display: none; /* Initially hidden */
-            z-index: 1000;
-        }
-        .risk-level {
-            font-size: 16px;
-            color: black; /* Normal risk color */
-        }
-        .highest-risk {
-            color: purple; /* Highlight color */
-            font-weight: bold;
-            font-size: 18px; /* Make it slightly larger */
-            text-shadow: 1px 1px 2px #5D3FD3; /* Soft shadow for emphasis */
-        }
-        #frames-container {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        #frames-container img {
-            width: 100px; /* Adjust size as needed */
-            height: auto;
-            border: 2px solid #5D3FD3; /* Matching the theme */
-            border-radius: 5px;
-        }
-        .button-container button {
-            padding: 10px 20px;
-            background-color: #5D3FD3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        .button-container button:hover {
-            background-color: #37FF8B;
-        }
-    </style>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cheating Score Analysis</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { 
+                font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+                padding: 20px; 
+                background-color: #f4f4f9; 
+            }
+            h1, h2 { color: #5D3FD3; }
+            .score { color: #ff4757; font-size: 24px; font-weight: bold; }
+            .log-list { background-color: #ffffff; border: 1px solid #ddd; margin-top: 20px; padding: 15px; }
+            .log-item { margin-bottom: 10px; }
+            .feedback-message {
+                position: fixed;
+                top: 50%; 
+                left: 50%; 
+                transform: translate(-50%, -50%);
+                font-size: 20px;
+                color: green;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 10px;
+                display: none; /* Initially hidden */
+                z-index: 1000;
+            }
+            .risk-level {
+                font-size: 16px;
+                color: black; /* Normal risk color */
+            }
+            .highest-risk {
+                color: purple; /* Highlight color */
+                font-weight: bold;
+                font-size: 18px; /* Make it slightly larger */
+                text-shadow: 1px 1px 2px #5D3FD3; /* Soft shadow for emphasis */
+            }
+            #frames-container {
+                margin-top: 20px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+            #frames-container img {
+                width: 100px; /* Adjust size as needed */
+                height: auto;
+                border: 2px solid #5D3FD3; /* Matching the theme */
+                border-radius: 5px;
+            }
+            .button-container button {
+                padding: 10px 20px;
+                background-color: #5D3FD3;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }
+            .button-container button:hover {
+                background-color: #472bb9;
+            }
+            .agent-analysis{
+                margin:20px 0;
+            }
+            .divider{
+                border: 1px solid #ddd;
+                width: 100%;
+                /* height: 20px; */
+            }
+            #feedback-form{
+                margin: 20px 0;
+            }
+            #feedback-form select{
+                width:200px;
+                /* height: 30px; */
+                padding: 5px;
+            }
+            #feedback-form button{
+                border: none;
+                border-radius: 5px;
+                background: #5D3FD3;
+                padding: 5px;
+                color: white; 
+            }
+    
+        </style>
+    </head>
 <body>
     <h1>Cheating Score Analysis</h1>
     <div class="score" id="cheating-score">Cheating Score: {{ score }}</div>
@@ -101,9 +129,14 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('feedback-message').style.display = 'block';
-                document.getElementById('submit-button').disabled = true;
-                return data.success ? fetch('/get-analysis') : Promise.reject('Feedback submission failed');
+                if (data.success) {
+                    document.getElementById('feedback-message').textContent = 'Feedback Submitted - Reinforcement Learning Agent is Training';
+                    document.getElementById('feedback-message').style.display = 'block';
+                    document.getElementById('submit-button').disabled = true;
+                    return fetch('/get-analysis');
+                } else {
+                    throw new Error('Feedback submission failed');
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -129,6 +162,10 @@
                     if (highestRiskElements[maxRiskIndex]) {
                         highestRiskElements[maxRiskIndex].classList.add('highest-risk');
                     }
+                    // Remove the feedback message after 1.5 seconds
+                    setTimeout(() => {
+                        document.getElementById('feedback-message').style.display = 'none';
+                    }, 1500);
                 } else {
                     throw new Error('Failed to fetch analysis');
                 }
@@ -142,7 +179,7 @@
             const container = document.getElementById('frames-container');
             // Toggle visibility of the container
             container.style.display = container.style.display === 'none' ? 'flex' : 'none';
-        
+    
             // Fetch and display frames only if the container is being shown and is empty
             if (container.style.display !== 'none' && container.innerHTML === '') {
                 fetch('/api/log-data')
@@ -170,7 +207,7 @@
                 });
             }
         });
-        
+    
     </script>
         
 </body>

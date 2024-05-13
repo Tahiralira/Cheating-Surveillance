@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 import numpy as np
+import sqlite3
 
 def parse_log_line(line):
     try:
@@ -54,15 +55,27 @@ def calculate_cheating_score(log_entries):
                 score += 50
     return score
 
-def process_logs():
+def process_logs(username):
     try:
         # Assuming this might raise an exception
-        log_files = ["./Keylogger/keylogger.txt", "./mousemovement/windowtablogger.txt", "./Eye-Tracker/webcam_log.txt"]
+        #log_files = ["./Keylogger/keylogger.txt", "./mousemovement/windowtablogger.txt", "./Eye-Tracker/webcam_log.txt"]
+        conn = sqlite3.connect('surveillance.db')
+        cursor = conn.cursor()
+
+        # Fetch logs for the given user from the database
+        cursor.execute('''SELECT keystroke_log, window_tab_log, cam_log FROM user_logs WHERE user = ?''', (username,))
+        logs = cursor.fetchone()  # Assuming there's only one row per user 
+
+        # Close database connection
+        cursor.close()
+        conn.close()
         all_entries = []
-        for file_name in log_files:
-            with open(file_name, 'r') as file:
-                for line in file:
-                    parsed_line = parse_log_line(line.strip())
+        for log in logs:
+            if log:
+                # Assuming log entries are separated by newlines
+                entries = log.strip().split('\n')
+                for entry in entries:
+                    parsed_line = parse_log_line(entry.strip())
                     if parsed_line:
                         all_entries.append(parsed_line)
         total_score = calculate_cheating_score(all_entries)
