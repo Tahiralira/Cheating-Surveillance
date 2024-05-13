@@ -91,6 +91,14 @@
         </style>
     </head>
 <body>
+    <nav class="navbar bg-body-tertiary mb-4">
+        <div class="container mb-5">
+          <a class="navbar-brand" href="#">
+            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
+          </a>
+        </div>
+      </nav>
+      <div class="container">
     <h1>Cheating Score Analysis</h1>
     <div class="score" id="cheating-score">Cheating Score: {{ score }}</div>
     <div class="log-list" id="log-details">
@@ -101,7 +109,7 @@
     <form id="feedback-form">
         <input type="hidden" name="score" value="{{ score }}">
         <label for="risk_level">Feedback on Risk Level:</label>
-        <select name="risk_level">
+        <select name="risk_level" class="form-select" aria-label="Default select example">
             <option value="0">Low</option>
             <option value="1">Medium</option>
             <option value="2">High</option>
@@ -109,6 +117,9 @@
         <button type="submit" id="submit-button">Submit Feedback</button>
     </form>
     <div class="feedback-message" id="feedback-message">Feedback Submitted - Reinforcement Learning Agent is Training</div>
+
+    <div class="divider"></div>
+
     <div id="agent-analysis" class="agent-analysis">
         <h3>Agent's Analysis:</h3>
         <p id="analysis-text">No analysis yet.</p>
@@ -119,6 +130,7 @@
     <div id="frames-container" style="display:none;">
         <!-- Images will be loaded here -->
     </div>
+</div>
     <script>
         document.getElementById('feedback-form').addEventListener('submit', function(event) {
             event.preventDefault();
