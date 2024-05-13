@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheating Score Analysis</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; background-color: #f4f4f9; }
+        h1, h2 { color: #5D3FD3; }
+        .score { color: #ff4757; font-size: 24px; font-weight: bold; }
+        .log-list { background-color: #ffffff; border: 1px solid #ddd; margin-top: 20px; padding: 15px; }
+        .log-item { margin-bottom: 10px; }
+        .feedback-message {
+            position: fixed;
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: green;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: none; /* Initially hidden */
+            z-index: 1000;
+        }
+        .risk-level {
+            font-size: 16px;
+            color: black; /* Normal risk color */
+        }
+        .highest-risk {
+            color: purple; /* Highlight color */
+            font-weight: bold;
+            font-size: 18px; /* Make it slightly larger */
+            text-shadow: 1px 1px 2px #5D3FD3; /* Soft shadow for emphasis */
+        }
+        #frames-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        #frames-container img {
+            width: 100px; /* Adjust size as needed */
+            height: auto;
+            border: 2px solid #5D3FD3; /* Matching the theme */
+            border-radius: 5px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            background-color: #5D3FD3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #37FF8B;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cheating Score Analysis</h1>
+    <div class="score" id="cheating-score">Cheating Score: {{ score }}</div>
+    <div class="log-list" id="log-details">
+        {% for log in logs %}
+        <div class="log-item">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} - {{ log.action }}: {{ log.context }}</div>
+        {% endfor %}
+    </div>
+    <form id="feedback-form">
+        <input type="hidden" name="score" value="{{ score }}">
+        <label for="risk_level">Feedback on Risk Level:</label>
+        <select name="risk_level">
+            <option value="0">Low</option>
+            <option value="1">Medium</option>
+            <option value="2">High</option>
+        </select>
+        <button type="submit" id="submit-button">Submit Feedback</button>
+    </form>
+    <div class="feedback-message" id="feedback-message">Feedback Submitted - Reinforcement Learning Agent is Training</div>
+    <div id="agent-analysis" class="agent-analysis">
+        <h3>Agent's Analysis:</h3>
+        <p id="analysis-text">No analysis yet.</p>
+    </div>
+    <div class="button-container">
+        <button id="view-frames-btn">See Captured Frames</button>
+    </div>
+    <div id="frames-container" style="display:none;">
+        <!-- Images will be loaded here -->
+    </div>
+    <script>
+        document.getElementById('feedback-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = this;
+            fetch('/feedback', {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('feedback-message').style.display = 'block';
+                document.getElementById('submit-button').disabled = true;
+                return data.success ? fetch('/get-analysis') : Promise.reject('Feedback submission failed');
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const analysisContainer = document.getElementById('analysis-text');
+                    analysisContainer.innerHTML = ''; // Clear previous contents
+                    const risks = data.analysis.split(',').map(s => s.trim()); // Assuming analysis is comma-separated
+                    let maxRisk = 0;
+                    let maxRiskIndex = 0;
+                    risks.forEach((risk, index) => {
+                        const value = parseFloat(risk.split(':')[1]); // Assuming "Risk Level: value" format
+                        if (value > maxRisk) {
+                            maxRisk = value;
+                            maxRiskIndex = index;
+                        }
+                        const riskElement = document.createElement('span');
+                        riskElement.textContent = risk;
+                        riskElement.className = 'risk-level';
+                        analysisContainer.appendChild(riskElement);
+                        analysisContainer.appendChild(document.createElement('br'));
+                    });
+                    const highestRiskElements = analysisContainer.getElementsByClassName('risk-level');
+                    if (highestRiskElements[maxRiskIndex]) {
+                        highestRiskElements[maxRiskIndex].classList.add('highest-risk');
+                    }
+                } else {
+                    throw new Error('Failed to fetch analysis');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('feedback-message').textContent = error;
+            });
+        });
+        document.getElementById('view-frames-btn').addEventListener('click', function() {
+            const container = document.getElementById('frames-container');
+            // Toggle visibility of the container
+            container.style.display = container.style.display === 'none' ? 'flex' : 'none';
+        
+            // Fetch and display frames only if the container is being shown and is empty
+            if (container.style.display !== 'none' && container.innerHTML === '') {
+                fetch('/api/log-data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        data.logs.forEach(log => {
+                            const div = document.createElement('div');
+                            div.className = 'frame-entry';
+                            div.innerHTML = `<strong>${log.timestamp}</strong> - ${log.position}<br>`;
+                            const img = document.createElement('img');
+                            img.src = `/images/${log.image_file}`;
+                            img.alt = 'Captured Frame';
+                            div.appendChild(img);
+                            container.appendChild(div);
+                        });
+                    } else {
+                        console.error('Failed to load frame data:', data.error);
+                        container.innerHTML = '\n\n\nError loading frames.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching frame data:', error);
+                    container.innerHTML = '\n\nError loading frames.';
+                });
+            }
+        });
+        
+    </script>
+        
+</body>
+</html>

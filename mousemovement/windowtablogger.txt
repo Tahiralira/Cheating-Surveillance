@@ -1,55 +1,15 @@
-2024-04-26 14:07:38 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-2024-04-26 14:07:44 - Switched to: 
-2024-04-26 14:07:45 - Switched to: Registra le tasti premuti - Opera
-2024-04-26 14:07:54 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:19:40 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:19:40 - Clipboard: # Log the clipboard content
-            with open("windowtablogger.txt", "a") as log_file:
-                log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - Clipboard: {clipboard_content}\n")
-        
-2024-04-28 08:19:52 - Switched to: Task Switching
-2024-04-28 08:19:54 - Switched to: windowtablogger.txt - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:19:56 - Switched to: ChatGPT - Opera
-2024-04-28 08:20:07 - Clipboard: 
-To print the 
-2024-04-28 08:20:08 - Switched to: windowtablogger.txt - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:20:35 - Switched to: ChatGPT - Opera
-2024-04-28 08:20:54 - Clipboard: ChatGPT can make mistakes. Consider checking important information
-2024-04-28 08:20:55 - Switched to: windowtablogger.txt - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:22:07 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:22:07 - Clipboard: ChatGPT can make mistakes. Consider checking important information
-2024-04-28 08:22:10 - Switched to: ChatGPT - Opera
-2024-04-28 08:22:14 - Clipboard: With this modification
-2024-04-28 08:22:15 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-
-
-
-
-New Session Log
-2024-04-28 08:24:14 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:24:14 - Clipboard: # Add space and "New Session" heading to log file
-    with open("windowtablogger.txt", "a") as log_file:
-        log_file.write("\n\nNew Session\n\n")
-2024-04-28 08:24:26 - Switched to: ChatGPT - Opera
-2024-04-28 08:24:29 - Switched to: windowtablogger.txt - Cheating-Surveillance - Visual Studio Code
 
 
 
 
 New Session Log
 
-2024-04-28 08:41:10 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
-2024-04-28 08:41:10 - Clipboard: log_file_path = "windowtablogger.txt"
-    sessions = read_log_file(log_file_path)
-
-    # Print sessions and events within each session
-    for i, session in enumerate(sessions, start=1):
-        print(f"Session {i}:")
-        for j, event in enumerate(session, start=1):
-            print(f"  Event {j}:")
-            print(f"    Tab Change Before: {event.tab_change_before}")
-            print(f"    Clipboard Data: {event.clipboard_data}")
-            print(f"    Tab Change After: {event.tab_change_after}")
-2024-04-28 08:41:13 - Switched to: ChatGPT - Opera
-2024-04-28 08:41:17 - Clipboard: This code iterates
-2024-04-28 08:41:19 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:41:58 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:41:58 - Clipboard:  elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('win') and event.name == 'left':
+        log_keystroke('Ctrl+Win+Left', window_title)
+    elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('win') and event.name == 'right':
+        log_keystroke('Ctrl+Win+Right', window_title)
+2024-05-13 01:42:01 - Switched to: 
+2024-05-13 01:42:02 - Switched to: ChatGPT - Opera
+2024-05-13 01:42:07 - Clipboard: i also have a code that logs mouse actions 
+2024-05-13 01:42:12 - Switched to: mouselogger.py - Cheating-Surveillance - Visual Studio Code

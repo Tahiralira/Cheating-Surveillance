@@ -1,0 +1,32 @@
+2024-05-13 01:34:00: alt - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:34:01: tab - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:34:02: alt - Keylogger análise sequências. - Opera
+2024-05-13 01:34:02: tab - Keylogger análise sequências. - Opera
+2024-05-13 01:34:03: ctrl - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:34:04: c - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:36:36: Alt+Tab - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:36:38: Alt+Tab - ChatGPT - Opera
+2024-05-13 01:36:39: Ctrl+C - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:39:01: Alt+Tab - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:39:03: Ctrl+Win+Right - ChatGPT - Opera
+2024-05-13 01:39:04: Alt+Tab - ChatGPT - Opera
+2024-05-13 01:39:05: Ctrl+C - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:45:45 - Clipboard: window_title = get_active_window_title()
+    if keyboard.is_pressed('ctrl') and event.name == 'c':
+        log_keystroke('Ctrl+C', window_title)
+    elif keyboard.is_pressed('ctrl') and event.name == 'v':
+        log_keystroke('Ctrl+V', window_title)
+    elif keyboard.is_pressed('alt') and event.name == 'tab':
+        log_keystroke('Alt+Tab', window_title)
+    elif keyboard.is_pressed('ctrl') and event.name == 'a':
+        log_keystroke('Ctrl+A', window_title) 
+    elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('win') and event.name == 'left':
+        log_keystroke('Ctrl+Win+Left', window_title)
+    elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('win') and event.name == 'right':
+        log_keystroke('Ctrl+Win+Right', window_title)  
+2024-05-13 01:45:49: Alt+Tab - keystroke.py - Cheating-Surveillance - Visual Studio Code
+2024-05-13 01:45:53: Ctrl+C - ChatGPT - Opera
+2024-05-13 01:45:53 - Clipboard: import pyperclip
+import threading
+2024-05-13 01:45:54: Alt+Tab - ChatGPT - Opera
+2024-05-13 01:45:56: Ctrl+C - keystroke.py - Cheating-Surveillance - Visual Studio Code

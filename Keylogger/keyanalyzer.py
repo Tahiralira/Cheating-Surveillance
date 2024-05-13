@@ -78,9 +78,4 @@ def analyze_keystroke_patterns(keystroke_data):
 
 # Analyze keystrokes and print the results
 analysis_results = analyze_keystrokes()
-# print(f"Total Keystrokes: {analysis_results['total_keystrokes']:.2f}")
-# print(f"Time Elapsed (minutes): {analysis_results['time_elapsed']:.2f}")
-# print(f"Average Typing Speed (keystrokes per minute): {analysis_results['average_typing_speed']:.2f}")
-# print("Answers:")
-# for ans in analysis_results['answer']:
-#     print(ans)
+

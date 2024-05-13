@@ -60,7 +60,6 @@ while True:
 
                 # Check for head movement alert
                 if head_movement > HEAD_MOVEMENT_THRESHOLD:
-                    print("Cheating")
                     cv2.putText(frame, "ALERT: Head movement detected!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
             # Check for pupil movement alert

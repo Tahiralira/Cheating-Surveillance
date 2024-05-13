@@ -1,0 +1,5 @@
+
+Timestamp: 20240513001310, Position: Looking at Screen, Proof Frame: proof_20240513001310.jpg
+Timestamp: 20240513001317, Position: Looking at Right, Proof Frame: proof_20240513001317.jpg
+Timestamp: 20240513001827, Position: Looking at Screen, Proof Frame: proof_20240513001827.jpg
+Timestamp: 20240513001834, Position: No Face/Using Mobile, Proof Frame: proof_20240513001834.jpg
