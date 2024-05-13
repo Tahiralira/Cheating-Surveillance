@@ -71,7 +71,7 @@ You can download and install CMake from the [official website](https://cmake.org
 ```bash
 sudo apt-get update
 sudo apt-get install cmake
-
+```
 
 ### Usage
 
