@@ -42,9 +42,13 @@ This Cheating Surveillance System is designed to monitor user activities on a co
    ```
 
 2. **Install Dependencies:**
+   To install the required dependencies, run the following command:
+
+   ```bash
+   pip install -r requirements.txt
    ```
-   pip install flask numpy
-   ```
+
+This command will install all the necessary packages listed in the `requirements.txt` file.
 
 3. **Start the Flask Application:**
    ```
@@ -54,16 +58,22 @@ This Cheating Surveillance System is designed to monitor user activities on a co
 4. **Access the Web Interface:**
    - Open a web browser and navigate to `http://127.0.0.1:5000/` to view the interface.
 
-### Usage
+5. ## Build Requirements
 
+This project uses CMake as the build system. Before building the project, make sure you have CMake installed on your system.
 
-To install the required dependencies, run the following command:
+### Installing CMake
+
+You can download and install CMake from the [official website](https://cmake.org/download/). Alternatively, you can use your system's package manager to install CMake.
+
+#### Example (Ubuntu):
 
 ```bash
-pip install -r requirements.txt
-```
+sudo apt-get update
+sudo apt-get install cmake
 
-This command will install all the necessary packages listed in the `requirements.txt` file.
+
+### Usage
 
 - **View Logs:** Click on the respective buttons to load different types of logs (keyboard, mouse, webcam).
 - **Analyze Risk:** Click on the 'Analyze Logs' button to see the risk analysis based on the collected data.
