@@ -12,46 +12,46 @@
             background-color: #f4f4f9; 
         }
         h1, h2 { color: #5D3FD3; }
-        .btn{
+        .btn {
             background-color: #5D3FD3;
             color: #fff;
         }
-        .btn:hover{
-            color:white;
+        .btn:hover {
+            color: white;
             background: #472bb9;
         }
-        .container{
-            /* display: flex; */
+        .container {
             justify-content: center;
             align-items: center;
         }
-
     </style>
 </head>
 <body>
     <nav class="navbar bg-body-tertiary mb-4">
         <div class="container mb-5">
-          <a class="navbar-brand" href="#">
-            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
-          </a>
+            <a class="navbar-brand" href="#">
+                <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
+            </a>
         </div>
-      </nav>
+    </nav>
     <div class="container">
-        
-        <form>
+        <form action="{{ url_for('login') }}" method="POST">
             <h1 class="fw-bold">Login</h1>
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
             <div class="mb-3">
-              <label for="exampleInputEmail1" class="form-label">Email address</label>
-              <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="abc@xyz.com">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
             </div>
             <div class="mb-3">
-              <label for="exampleInputPassword1" class="form-label">Password</label>
-              <input type="password" class="form-control" id="exampleInputPassword1">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
             </div>
             <button type="submit" class="btn">Submit</button>
-          </form>
+        </form>
     </div>
-    
-        
 </body>
 </html>

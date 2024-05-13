@@ -3,81 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Viewer</title>
+    <title>User List</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            /* font-family: 'Arial', sans-serif; */
-            /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
-            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
             color: #333;
         }
         h1 {
-            color: #5D3FD3;
+            color: #5d3fd3;
+            text-align: center;
         }
-        /* Input Style */
-        .form-control {
-            position: relative;
-            margin-bottom: 20px;
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
             background-color: #fff;
-            --width-of-input: 100%;  /* Full width of container */
-            --border-height: 2px;
-            --border-before-color: rgba(255, 255, 255, 0.7);
-            --border-after-color: #37FF8B; /* Lime green, for example */
+            border-radius: 5px;
         }
-        .input {
-            color: #fff;
-            font-size: 0.9rem;
-            background-color: transparent;
-            width: var(--width-of-input);
-            box-sizing: border-box;
-            padding-inline: 0.5em;
-            padding-block: 0.7em;
-            border: none;
-            border-bottom: var(--border-height) solid var(--border-before-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
-        .input-border {
-            position: absolute;
-            background: var(--border-after-color);
-            width: 0%;
-            height: var(--border-height);
-            bottom: 0;
-            left: 0;
-            transition: width 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        .navbar-brand img {
+            height: 50px;
         }
-        .input:focus {
-            outline: none;
-        }
-        .input:focus + .input-border {
-            width: 100%;
-        }
-        /* Button Styles */
-        .button-container {
-            text-align: center; /* Center aligns all buttons */
-        }
-
         .button {
             display: inline-block;
-            margin: 10px 10px; /* Adjust spacing between buttons */
+            margin: 10px 10px;
             padding: 10px 20px;
             border: none;
             cursor: pointer;
-            background-color: #5D3FD3; 
-            color: white; 
+            background-color: #5d3fd3;
+            color: white;
             font-size: 1em;
-            font-weight:bold;
+            font-weight: bold;
             text-transform: uppercase;
             transition: background-color 0.3s;
+            border-radius: 5px;
         }
-
         .button:hover {
-            background-color: #472bb9; /* Green background on hover */
+            background-color: #472bb9;
         }
-
         #log-data {
             background-color: #ffffff;
             border: 1px solid #ddd;
@@ -85,101 +60,42 @@
             margin-top: 10px;
             height: 300px;
             overflow: scroll;
-            white-space: pre-wrap; /* Maintains spaces and line breaks */
-            word-wrap: break-word; /* Breaks long words */
-        }   
-        .divider{
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .divider {
             border: 1px solid #ddd;
             width: 100%;
-            /* height: 20px; */
         }
-
-        /* Container for Analyze Logs button */
         .analyze-button-container {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
         .analyze-button-container .button {
-            margin-left: 30px; /* Adjust this value to move the button to the right */
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <nav class="navbar bg-body-tertiary mb-4">
         <div class="container mb-5">
-          <a class="navbar-brand" href="#">
-            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
-          </a>
+            <a class="navbar-brand" href="#"><img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" alt="Logo"></a>
         </div>
-      </nav>
-      <div class="container">
-    <h1>Log Viewer</h1>
-    <div class="button-container">
-        <div class="button" onclick="loadKeyLogs()">
-            <span class="hover-text">View Keyboard Logs</span>
-        </div>
-        <div class="button" onclick="loadMouseLogs()">
-            <span class="hover-text">View Mouse Logs</span>
-        </div>
-        <div class="button" onclick="loadWebcamLogs()">
-            <span class="hover-text">View Webcam Logs</span>
-        </div>
+    </nav>
+    <div class="container">
+        <h1>User List</h1>
+        <ul>
+            {% for user in users %}
+                <li>
+                    <a href="#" onclick="redirectToLogViewer('{{ user[0] }}')">{{ user[0] }}</a>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
-
-    
-    <pre id="log-data">Please select a log type to display.</pre>
-
-    <div class="divider"></div>
-
-    <!-- Container for Analyze Logs button -->
-    <div class="analyze-button-container">
-        <div class="button" onclick="analyzeLogs()">Analyze All Logs Together</div>
-    </div>
-    
-</div>
     <script>
-        let currentLogs = [];  // Cache for currently displayed logs
-
-        const fetchLogs = async (url) => {
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.data.split('\n');
+        const redirectToLogViewer = (user) => {
+            window.location.href = `/log_viewer/${user}`
         }
-
-        const displayLogs = (logs) => {
-            const logContainer = document.getElementById('log-data');
-            logContainer.innerHTML = logs.map(log => `<div>${log}</div>`).join('');
-        }
-
-        const loadKeyLogs = async () => {
-            currentLogs = await fetchLogs('/keylogs');
-            displayLogs(currentLogs);
-        }
-
-        const loadMouseLogs = async () => {
-            currentLogs = await fetchLogs('/mouselogs');
-            displayLogs(currentLogs);
-        }
-        const loadWebcamLogs = async () => {
-            currentLogs = await fetchLogs('/webcamlogs');
-            displayLogs(currentLogs);
-        }
-
-        const analyzeLogs = async () => {
-            window.location.href = '/score';
-            console.log('Logs are being analyzed...');
-        }
-
-        document.getElementById('searchInput').addEventListener('input', (event) => {
-            const searchText = event.target.value.toLowerCase();
-            const filteredLogs = currentLogs.filter(log => log.toLowerCase().includes(searchText));
-            displayLogs(filteredLogs);
-        });
-
-        // Optionally preload one type of logs
-        window.onload = () => {
-            loadKeyLogs();
-        };
     </script>
 </body>
 </html>
