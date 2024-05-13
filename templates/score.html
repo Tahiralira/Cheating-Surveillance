@@ -94,10 +94,11 @@
     <nav class="navbar bg-body-tertiary mb-4">
         <div class="container mb-5">
           <a class="navbar-brand" href="#">
-            <img src="../logo-no-background.png"  height="100">
+            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
           </a>
         </div>
       </nav>
+      <div class="container">
     <h1>Cheating Score Analysis</h1>
     <div class="score" id="cheating-score">Cheating Score: {{ score }}</div>
     <div class="log-list" id="log-details">
@@ -129,6 +130,7 @@
     <div id="frames-container" style="display:none;">
         <!-- Images will be loaded here -->
     </div>
+</div>
     <script>
         document.getElementById('feedback-form').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -141,6 +143,9 @@
             .then(data => {
                 document.getElementById('feedback-message').style.display = 'block';
                 document.getElementById('submit-button').disabled = true;
+                setTimeout(() => {
+                    document.getElementById('feedback-message').style.display = 'none';
+                }, 3000); 
                 return data.success ? fetch('/get-analysis') : Promise.reject('Feedback submission failed');
             })
             .then(response => response.json())
