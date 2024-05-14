@@ -49,5 +49,8 @@
     },
     {
         "face_position": "looking_down_mobile"
+    },
+    {
+        "face_position": "no_face_using_mobile"
     }
 ]

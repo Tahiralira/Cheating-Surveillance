@@ -7,8 +7,6 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            /* font-family: 'Arial', sans-serif; */
-            /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
             font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
@@ -18,15 +16,14 @@
         h1 {
             color: #5D3FD3;
         }
-        /* Input Style */
         .form-control {
             position: relative;
             margin-bottom: 20px;
             background-color: #fff;
-            --width-of-input: 100%;  /* Full width of container */
+            --width-of-input: 100%;
             --border-height: 2px;
             --border-before-color: rgba(255, 255, 255, 0.7);
-            --border-after-color: #37FF8B; /* Lime green, for example */
+            --border-after-color: #37FF8B;
         }
         .input {
             color: #fff;
@@ -55,14 +52,12 @@
         .input:focus + .input-border {
             width: 100%;
         }
-        /* Button Styles */
         .button-container {
-            text-align: center; /* Center aligns all buttons */
+            text-align: center;
         }
-
         .button {
             display: inline-block;
-            margin: 10px 10px; /* Adjust spacing between buttons */
+            margin: 10px 10px;
             padding: 10px 20px;
             border: none;
             cursor: pointer;
@@ -73,12 +68,10 @@
             text-transform: uppercase;
             transition: background-color 0.3s;
         }
-
         .button:hover {
-            background-color: #37FF8B; /* Green background on hover */
-            color: #000; /* Black text color on hover */
+            background-color: #37FF8B;
+            color: #000;
         }
-
         #log-data {
             background-color: #ffffff;
             border: 1px solid #ddd;
@@ -86,22 +79,19 @@
             margin-top: 10px;
             height: 300px;
             overflow: scroll;
-            white-space: pre-wrap; /* Maintains spaces and line breaks */
-            word-wrap: break-word; /* Breaks long words */
-        }   
-        .divider{
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .divider {
             border: 1px solid #ddd;
             width: 100%;
-            /* height: 20px; */
         }
-
-        /* Container for Analyze Logs button */
         .analyze-button-container {
             text-align: center;
             margin-top: 10px;
         }
         .analyze-button-container .button {
-            margin-left: 30px; /* Adjust this value to move the button to the right */
+            margin-left: 30px;
         }
     </style>
 </head>
@@ -109,7 +99,7 @@
     <nav class="navbar bg-body-tertiary mb-4">
         <div class="container mb-5">
           <a class="navbar-brand" href="#">
-            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
+            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" height="100">
           </a>
         </div>
       </nav>
@@ -125,10 +115,11 @@
         <div class="button" id="load-camlogs-btn">
             <span class="hover-text">Load Webcam Logs</span>
         </div>
+        <div class="button" id="clear-log-btn">
+            <span class="hover-text">Clear Log</span>
+        </div>
     </div>
 
-    <!-- Container for Analyze Logs button -->
-    
     <pre id="log-data">Please select a log type to display.</pre>
     
     <div class="divider"></div>
@@ -138,7 +129,7 @@
     </div>
 </div>
     <script>
-        let currentLogs = [];  // Cache for currently displayed logs
+        let currentLogs = '';  // Track which logs are currently being viewed
 
         const fetchLogs = async (url) => {
             const response = await fetch(url);
@@ -157,14 +148,16 @@
             const data = await response.json();
             const logData = data.data || 'No logs available.';
             document.getElementById('log-data').textContent = logData;
+            currentLogs = 'keylogs';
         }
 
         const loadMouseLogs = async () => {
             const username = '{{ user }}';
-            const response = await fetch(`/mouselogs/${username}`);
+            const response = await fetch(`/windowlogs/${username}`);
             const data = await response.json();
             const logData = data.data || 'No logs available.';
             document.getElementById('log-data').textContent = logData;
+            currentLogs = 'windowlogs';
         }
         const loadWebcamLogs = async () => {
             const username = '{{ user }}';
@@ -172,10 +165,36 @@
             const data = await response.json();
             const logData = data.data || 'No logs available.';
             document.getElementById('log-data').textContent = logData;
+            currentLogs = 'camlogs';
+        }
+
+        const clearLog = async () => {
+            const username = '{{ user }}';
+            let url;
+            switch (currentLogs) {
+                case 'keylogs':
+                    url = `/clear/keylogs/${username}`;
+                    break;
+                case 'windowlogs':
+                    url = `/clear/windowlogs/${username}`;
+                    break;
+                case 'camlogs':
+                    url = `/clear/camlogs/${username}`;
+                    break;
+                default:
+                    alert('No log type selected to clear.');
+                    return;
+            }
+            const response = await fetch(url, { method: 'DELETE' });
+            if (response.ok) {
+                document.getElementById('log-data').textContent = 'Log cleared.';
+            } else {
+                document.getElementById('log-data').textContent = 'Failed to clear log.';
+            }
         }
 
         const analyzeLogs = async () => {
-            const username = '{{ user }}'; // Get the username from the template
+            const username = '{{ user }}'; 
             window.location.href = `/score/${username}`;
             console.log('Logs are being analyzed...');
         }
@@ -183,8 +202,7 @@
         document.getElementById('load-keylogs-btn').addEventListener('click', loadKeyLogs);
         document.getElementById('load-mouselogs-btn').addEventListener('click', loadMouseLogs);
         document.getElementById('load-camlogs-btn').addEventListener('click', loadWebcamLogs);
-        // Optionally preload one type of logs
-        
+        document.getElementById('clear-log-btn').addEventListener('click', clearLog);
     </script>
 </body>
 </html>

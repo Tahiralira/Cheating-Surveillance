@@ -219,6 +219,50 @@ def dqn_detailed_feedback():
     save_feedback(feedback, DETAILED_FEEDBACK_FILE)
     return jsonify({'success': True})
 
+def clear_log_file(file_path):
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write('')
+        return True
+    except Exception as e:
+        print(f"Error clearing log file {file_path}: {e}")
+        return False
+
+def update_db_log(user, log_type):
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            if log_type == 'keylogs':
+                cursor.execute('UPDATE user_logs SET keystroke_log = "" WHERE user = ?', (user,))
+            elif log_type == 'mouselogs':
+                cursor.execute('UPDATE user_logs SET window_log = "" WHERE user = ?', (user,))
+            elif log_type == 'camlogs':
+                cursor.execute('UPDATE user_logs SET cam_log = "" WHERE user = ?', (user,))
+            conn.commit()
+        return True
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return False
+
+@app.route('/clear/<log_type>/<user>', methods=['DELETE'])
+def clear_log(log_type, user):
+    log_files = {
+        'keylogs': f'{os.getenv("APPDATA")}/KeystrokeLogger/{user}_keystroke_log.txt',
+        'mouselogs': f'{os.getenv("APPDATA")}/KeystrokeLogger/{user}_window_log.txt',
+        'camlogs': f'{os.getenv("APPDATA")}/KeystrokeLogger/{user}_webcam_log.txt'
+    }
+    
+    if log_type not in log_files:
+        return jsonify({'error': 'Invalid log type'}), 400
+    
+    log_file = log_files[log_type]
+    
+    if clear_log_file(log_file) and update_db_log(user, log_type):
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'error': 'Failed to clear log'}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
