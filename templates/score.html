@@ -1,104 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Cheating Score Analysis</title>
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body { 
-                font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-                padding: 20px; 
-                background-color: #f4f4f9; 
-            }
-            h1, h2 { color: #5D3FD3; }
-            .score { color: #ff4757; font-size: 24px; font-weight: bold; }
-            .log-list { background-color: #ffffff; border: 1px solid #ddd; margin-top: 20px; padding: 15px; }
-            .log-item { margin-bottom: 10px; }
-            .feedback-message {
-                position: fixed;
-                top: 50%; 
-                left: 50%; 
-                transform: translate(-50%, -50%);
-                font-size: 20px;
-                color: green;
-                background: white;
-                border: 1px solid #ddd;
-                padding: 10px;
-                display: none; /* Initially hidden */
-                z-index: 1000;
-            }
-            .risk-level {
-                font-size: 16px;
-                color: black; /* Normal risk color */
-            }
-            .highest-risk {
-                color: purple; /* Highlight color */
-                font-weight: bold;
-                font-size: 18px; /* Make it slightly larger */
-                text-shadow: 1px 1px 2px #5D3FD3; /* Soft shadow for emphasis */
-            }
-            #frames-container {
-                margin-top: 20px;
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-            }
-            #frames-container img {
-                width: 100px; /* Adjust size as needed */
-                height: auto;
-                border: 2px solid #5D3FD3; /* Matching the theme */
-                border-radius: 5px;
-            }
-            .button-container button {
-                padding: 10px 20px;
-                background-color: #5D3FD3;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-                transition: background-color 0.3s;
-            }
-            .button-container button:hover {
-                background-color: #472bb9;
-            }
-            .agent-analysis{
-                margin:20px 0;
-            }
-            .divider{
-                border: 1px solid #ddd;
-                width: 100%;
-                /* height: 20px; */
-            }
-            #feedback-form{
-                margin: 20px 0;
-            }
-            #feedback-form select{
-                width:200px;
-                /* height: 30px; */
-                padding: 5px;
-            }
-            #feedback-form button{
-                border: none;
-                border-radius: 5px;
-                background: #5D3FD3;
-                padding: 5px;
-                color: white; 
-            }
-    
-        </style>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheating Score Analysis</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            padding: 20px; 
+            background-color: #f4f4f9; 
+        }
+        h1, h2 { color: #5D3FD3; }
+        .score { color: #ff4757; font-size: 24px; font-weight: bold; }
+        .log-list { background-color: #ffffff; border: 1px solid #ddd; margin-top: 20px; padding: 15px; }
+        .log-item { margin-bottom: 10px; }
+        .feedback-message {
+            position: fixed;
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: green;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: none; /* Initially hidden */
+            z-index: 1000;
+        }
+        .risk-level {
+            font-size: 16px;
+            color: black; /* Normal risk color */
+        }
+        .highest-risk {
+            color: purple; /* Highlight color */
+            font-weight: bold;
+            font-size: 18px; /* Make it slightly larger */
+            text-shadow: 1px 1px 2px #5D3FD3; /* Soft shadow for emphasis */
+        }
+        #frames-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .frame-container {
+            position: relative;
+            display: inline-block;
+        }
+        .frame-container img {
+            width: 100px; /* Adjust size as needed */
+            height: auto;
+            border: 2px solid #5D3FD3; /* Matching the theme */
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            background-color: #5D3FD3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #472bb9;
+        }
+        .agent-analysis{
+            margin:20px 0;
+        }
+        .divider{
+            border: 1px solid #ddd;
+            width: 100%;
+        }
+        #feedback-form{
+            margin: 20px 0;
+        }
+        #feedback-form select{
+            width:200px;
+            padding: 5px;
+        }
+        #feedback-form button{
+            border: none;
+            border-radius: 5px;
+            background: #5D3FD3;
+            padding: 5px;
+            color: white; 
+        }
+        .feedback-section {
+            display: none; /* Initially hidden */
+            margin-top: 10px;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+        #caption {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+            height: 150px;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .highest-value {
+            color: #ff4757; /* Red for highest value */
+            font-weight: bold;
+        }
+    </style>
+</head>
 <body>
-    <nav class="navbar bg-body-tertiary mb-4">
-        <div class="container mb-5">
-          <a class="navbar-brand" href="#">
-            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  height="100">
-          </a>
-        </div>
-      </nav>
-      <div class="container">
+<nav class="navbar bg-body-tertiary mb-4">
+    <div class="container mb-5">
+        <a class="navbar-brand" href="#">
+            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" height="100">
+        </a>
+    </div>
+</nav>
+<div class="container">
     <h1>Cheating Score Analysis</h1>
     <div class="score" id="cheating-score">Cheating Score: {{ score }}</div>
     <div class="log-list" id="log-details">
@@ -119,6 +172,12 @@
     <div class="feedback-message" id="feedback-message">Feedback Submitted - Reinforcement Learning Agent is Training</div>
 
     <div class="divider"></div>
+    <!-- Modal to display full-size image -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="fullSizeImage">
+        <div id="caption"></div>
+    </div>
 
     <div id="agent-analysis" class="agent-analysis">
         <h3>Agent's Analysis:</h3>
@@ -130,97 +189,259 @@
     <div id="frames-container" style="display:none;">
         <!-- Images will be loaded here -->
     </div>
+    <div id="dqn-agent-analysis" class="agent-analysis">
+        <h3>DQN Agent's Analysis:</h3>
+        <p id="dqn-analysis-text">No analysis yet.</p>
+    </div>
 </div>
-    <script>
-        document.getElementById('feedback-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            var form = this;
-            fetch('/feedback', {
-                method: 'POST',
-                body: new FormData(form)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('feedback-message').textContent = 'Feedback Submitted - Reinforcement Learning Agent is Training';
-                    document.getElementById('feedback-message').style.display = 'block';
-                    document.getElementById('submit-button').disabled = true;
-                    return fetch('/get-analysis');
-                } else {
-                    throw new Error('Feedback submission failed');
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const analysisContainer = document.getElementById('analysis-text');
-                    analysisContainer.innerHTML = ''; // Clear previous contents
-                    const risks = data.analysis.split(',').map(s => s.trim()); // Assuming analysis is comma-separated
-                    let maxRisk = 0;
-                    let maxRiskIndex = 0;
-                    risks.forEach((risk, index) => {
-                        const value = parseFloat(risk.split(':')[1]); // Assuming "Risk Level: value" format
-                        if (value > maxRisk) {
-                            maxRisk = value;
-                            maxRiskIndex = index;
-                        }
-                        const riskElement = document.createElement('span');
-                        riskElement.textContent = risk;
-                        riskElement.className = 'risk-level';
-                        analysisContainer.appendChild(riskElement);
-                        analysisContainer.appendChild(document.createElement('br'));
-                    });
-                    const highestRiskElements = analysisContainer.getElementsByClassName('risk-level');
-                    if (highestRiskElements[maxRiskIndex]) {
-                        highestRiskElements[maxRiskIndex].classList.add('highest-risk');
+<script>
+    document.getElementById('feedback-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var form = this;
+        fetch('/feedback', {
+            method: 'POST',
+            body: new FormData(form)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('feedback-message').textContent = 'Feedback Submitted - Reinforcement Learning Agent is Training';
+                document.getElementById('feedback-message').style.display = 'block';
+                document.getElementById('submit-button').disabled = true;
+                return fetch('/get-analysis');
+            } else {
+                throw new Error('Feedback submission failed');
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const analysisContainer = document.getElementById('analysis-text');
+                analysisContainer.innerHTML = ''; // Clear previous contents
+                const risks = data.analysis.split(',').map(s => s.trim()); // Assuming analysis is comma-separated
+                let maxRisk = 0;
+                let maxRiskIndex = 0;
+                risks.forEach((risk, index) => {
+                    const value = parseFloat(risk.split(':')[1]); // Assuming "Risk Level: value" format
+                    if (value > maxRisk) {
+                        maxRisk = value;
+                        maxRiskIndex = index;
                     }
-                    // Remove the feedback message after 1.5 seconds
-                    setTimeout(() => {
-                        document.getElementById('feedback-message').style.display = 'none';
-                    }, 1500);
+                    const riskElement = document.createElement('span');
+                    riskElement.textContent = risk;
+                    riskElement.className = 'risk-level';
+                    analysisContainer.appendChild(riskElement);
+                    analysisContainer.appendChild(document.createElement('br'));
+                });
+                const highestRiskElements = analysisContainer.getElementsByClassName('risk-level');
+                if (highestRiskElements[maxRiskIndex]) {
+                    highestRiskElements[maxRiskIndex].classList.add('highest-risk');
+                }
+                // Remove the feedback message after 1.5 seconds
+                setTimeout(() => {
+                    document.getElementById('feedback-message').style.display = 'none';
+                }, 1500);
+            } else {
+                throw new Error('Failed to fetch analysis');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('feedback-message').textContent = error;
+        });
+    });
+    
+    document.getElementById('view-frames-btn').addEventListener('click', function() {
+        fetch('/parse-webcam-logs')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Failed to load images:', data.error);
+                    return;
+                }
+            
+                const container = document.getElementById('frames-container');
+                container.innerHTML = '';  // Clear previous contents
+                container.style.display = 'flex'; // Ensure the container is visible
+                
+                data.images.forEach((imageFilename, index) => {
+                    const frameContainer = document.createElement('div');
+                    frameContainer.className = 'frame-container';
+    
+                    const img = document.createElement('img');
+                    img.onload = function() {
+                        // If the image loads successfully, add it to the container
+                        frameContainer.appendChild(img);
+                        // Add the feedback section for each frame
+                        const feedbackSection = document.createElement('div');
+                        feedbackSection.className = 'feedback-section';
+                        feedbackSection.innerHTML = `
+                        <p id="output-correct-text">Is this output correct?</p>
+                        <button class="yes-button" data-index="${index}">Yes</button>
+                        <button class="no-button" data-index="${index}">No</button>
+                        <div class="detailed-feedback-form" style="display: none;">
+                            <form class="detailed-feedback" data-index="${index}">
+                                <label for="face_position_${index}">Detailed Feedback:</label>
+                                <select name="face_position" id="face_position_${index}">
+                                    <option value="looking_at_screen">Looking at Screen</option>
+                                    <option value="looking_at_right">Looking at Right</option>
+                                    <option value="looking_at_left">Looking at Left</option>
+                                    <option value="looking_down_mobile">Looking Down/Mobile Possible</option>
+                                    <option value="no_face_using_mobile">No Face/Using Mobile</option>
+                                </select>
+                                <button type="submit">Submit Detailed Feedback</button>
+                            </form>
+                        </div>
+                        `;
+                        frameContainer.appendChild(feedbackSection);
+                        container.appendChild(frameContainer);
+                    };
+                    img.onerror = function() {
+                        console.error('Failed to load image:', imageFilename);
+                        // Handle the error here, such as displaying a placeholder or skipping the image
+                    };
+                    img.src = `/images/${imageFilename}`; // Here, imageFilename should be like 'Eye-Tracker/proof_20240514040145.jpg'
+                    img.alt = imageFilename;
+                    img.dataset.index = index; // Store the index for reference
+                });
+    
+                // Show feedback section
+                document.getElementById('feedback-section').style.display = 'block';
+            })
+            .catch(error => console.error('Error fetching images:', error));
+    });
+    
+
+
+    function fetchDqnAnalysis() {
+        fetch('/get-dqn-analysis')
+            .then(response => response.json())
+            .then(data => {
+                const analysisContainer = document.getElementById('dqn-analysis-text');
+                analysisContainer.innerHTML = ''; // Clear previous contents
+                if (data.success) {
+                    const detections = data.analysis.split(', '); // Assuming analysis is separated by comma and space
+                    detections.forEach(detection => {
+                        const parts = detection.split(': ');
+                        const values = parts[1].substring(1, parts[1].length-1).split(', '); // Remove brackets and split by comma
+                        const maxValue = Math.max(...values.map(Number)); // Convert strings to numbers and find max
+                        const detectionDiv = document.createElement('div');
+                        detectionDiv.textContent = `${parts[0]}: `;
+                        values.forEach(value => {
+                            const valueSpan = document.createElement('span');
+                            valueSpan.textContent = `${value}, `;
+                            if (Number(value) === maxValue) {
+                                valueSpan.className = 'highest-value'; // Apply class to highlight max value
+                            }
+                            detectionDiv.appendChild(valueSpan);
+                        });
+                        detectionDiv.lastChild.textContent = detectionDiv.lastChild.textContent.slice(0, -2); // Remove the last comma for cleaner formatting
+                        analysisContainer.appendChild(detectionDiv);
+                    });
                 } else {
-                    throw new Error('Failed to fetch analysis');
+                    analysisContainer.textContent = 'Failed to load analysis.';
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('feedback-message').textContent = error;
+                console.error('Error fetching DQN analysis:', error);
+                analysisContainer.textContent = 'Error loading analysis.';
             });
-        });
-        document.getElementById('view-frames-btn').addEventListener('click', function() {
-            const container = document.getElementById('frames-container');
-            // Toggle visibility of the container
-            container.style.display = container.style.display === 'none' ? 'flex' : 'none';
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var modal = document.getElementById("imageModal");
+        var modalImg = document.getElementById("fullSizeImage");
+        var captionText = document.getElementById("caption");
+        var span = document.getElementsByClassName("close")[0];
     
-            // Fetch and display frames only if the container is being shown and is empty
-            if (container.style.display !== 'none' && container.innerHTML === '') {
-                fetch('/api/log-data')
+        // Function to open the modal
+        function openModal(imageSrc, altText) {
+            modal.style.display = "block";
+            modalImg.src = imageSrc;
+            captionText.textContent = altText;
+        }
+    
+        // Function to close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        // Event delegation for dynamically loaded images
+        document.getElementById('frames-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'IMG') {
+                openModal(event.target.src, event.target.alt);
+                const feedbackSection = event.target.nextElementSibling;
+                feedbackSection.style.display = 'block';
+            }
+        });
+    
+        // Event delegation for feedback buttons
+        document.getElementById('frames-container').addEventListener('click', function(event) {
+            if (event.target.classList.contains('yes-button')) {
+                const index = event.target.dataset.index;
+                fetch('/dqn_feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ feedback: 'yes', frame_index: index })
+                })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        data.logs.forEach(log => {
-                            const div = document.createElement('div');
-                            div.className = 'frame-entry';
-                            div.innerHTML = `<strong>${log.timestamp}</strong> - ${log.position}<br>`;
-                            const img = document.createElement('img');
-                            img.src = `/images/${log.image_file}`;
-                            img.alt = 'Captured Frame';
-                            div.appendChild(img);
-                            container.appendChild(div);
-                        });
+                        alert('Thank you for your feedback!');
+                        event.target.style.display = 'none';
+                        event.target.nextElementSibling.style.display = 'none';
+                        event.target.previousElementSibling.style.display = 'none'; // Hide the "Is this output correct?" line
+                        return fetchDqnAnalysis();
                     } else {
-                        console.error('Failed to load frame data:', data.error);
-                        container.innerHTML = '\n\n\nError loading frames.';
+                        throw new Error('Yes feedback submission failed');
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching frame data:', error);
-                    container.innerHTML = '\n\nError loading frames.';
+                    console.error('Error:', error);
+                    alert('Error submitting yes feedback');
+                });
+            } else if (event.target.classList.contains('no-button')) {
+                const feedbackSection = event.target.parentElement;
+                feedbackSection.querySelector('.yes-button').style.display = 'none';
+                feedbackSection.querySelector('.no-button').style.display = 'none';
+                feedbackSection.querySelector('.detailed-feedback-form').style.display = 'block';
+                feedbackSection.querySelector('.output-correct-text').style.display = 'none'; // Hide the "Is this output correct?" line
+            }
+        });
+    
+        // Event delegation for detailed feedback form submission
+        document.getElementById('frames-container').addEventListener('submit', function(event) {
+            if (event.target.classList.contains('detailed-feedback')) {
+                event.preventDefault();
+                var form = event.target;
+                const index = form.dataset.index;
+                fetch('/dqn_detailed_feedback', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Detailed feedback submitted!');
+                        form.style.display = 'none';
+                        form.closest('.frame-container').querySelector('.output-correct-text').style.display = 'none'; // Hide the "Is this output correct?" line
+                        return fetchDqnAnalysis();
+                    } else {
+                        throw new Error('Detailed feedback submission failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error submitting detailed feedback');
                 });
             }
         });
     
-    </script>
         
+    });
+    
+</script>
+
 </body>
 </html>

@@ -10,6 +10,12 @@ from torchvision import transforms
 import json
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as models
+from torchvision.models import shufflenet_v2_x1_0, ShuffleNet_V2_X1_0_Weights
+
+weights = ShuffleNet_V2_X1_0_Weights.DEFAULT  # Use the appropriate weights enum
+model = shufflenet_v2_x1_0(weights=weights)
+
 
 class HeadPoseNet(nn.Module):
     def __init__(self):
@@ -35,49 +41,52 @@ class HeadPoseNet(nn.Module):
 # Instantiate the model
 model = HeadPoseNet()
 
-# Load the state dictionary
 state_dict = torch.load('hopenet_lite_6MB.pkl', map_location='cpu')
 model.load_state_dict(state_dict)
-model.eval()  # Set the model to evaluation mode
+model.eval()
+
 print(type(state_dict))
 
 def detect_faces(mtcnn, frame):
-    # Detect faces and facial landmarks
-    boxes, probs, landmarks = mtcnn.detect(frame, landmarks=True)
-    if boxes is not None and len(boxes) > 0:
-        # Calculate the vertical distance between the eyes and the nose
-        left_eye_y = landmarks[0][0][1]
-        right_eye_y = landmarks[0][1][1]
-        nose_y = landmarks[0][2][1]
-        eye_to_nose_distance = nose_y - (left_eye_y + right_eye_y) / 2
-        #print("Eye to nose distance:", eye_to_nose_distance)  # For debugging
-        # Check if the distance is within a reasonable range
-        if 5 <= eye_to_nose_distance <= 20:  # Adjust this range as needed
-            print("Looking at Screen")
-            return "Looking at Screen"
-        elif eye_to_nose_distance > 40:  # Adjust this threshold as needed
-            print("Looking down, Possible Mobile Usage")
-            return "Looking down/Mobile Usage"
-        else:
-            # Get the position of the first detected face
-            x, _, w, _ = map(int, boxes[0])
-            center = (x + w) / 2
-            width = frame.shape[1]
-            # Determine position based on the relative position of the face in the frame
-            if center < width * 0.4:
-                print("Looking at Right")
-                return "Looking at Right"
-            elif center > width * 0.6:
-                print("Looking at Left")
-                return "Looking at Left"
-            else:
+    try:
+        # Detect faces and facial landmarks
+        boxes, probs, landmarks = mtcnn.detect(frame, landmarks=True)
+        if boxes is not None and len(boxes) > 0:
+            # Calculate the vertical distance between the eyes and the nose
+            left_eye_y = landmarks[0][0][1]
+            right_eye_y = landmarks[0][1][1]
+            nose_y = landmarks[0][2][1]
+            eye_to_nose_distance = nose_y - (left_eye_y + right_eye_y) / 2
+            #print("Eye to nose distance:", eye_to_nose_distance)  # For debugging
+            # Check if the distance is within a reasonable range
+            if 5 <= eye_to_nose_distance <= 20:  # Adjust this range as needed
                 print("Looking at Screen")
                 return "Looking at Screen"
-        
-    else:
-        print("No Face Detected or Possible Mobile Use")
-        return "No Face/Using Mobile"
-
+            elif eye_to_nose_distance > 40:  # Adjust this threshold as needed
+                print("Looking down, Possible Mobile Usage")
+                return "Looking down/Mobile Usage"
+            else:
+                # Get the position of the first detected face
+                x, _, w, _ = map(int, boxes[0])
+                center = (x + w) / 2
+                width = frame.shape[1]
+                # Determine position based on the relative position of the face in the frame
+                if center < width * 0.4:
+                    print("Looking at Right")
+                    return "Looking at Right"
+                elif center > width * 0.6:
+                    print("Looking at Left")
+                    return "Looking at Left"
+                else:
+                    print("Looking at Screen")
+                    return "Looking at Screen"
+            
+        else:
+            print("No Face Detected or Possible Mobile Use")
+            return "No Face/Using Mobile"
+    except Exception as e:
+        print(f"Error in face detection: {e}")
+        return "Detection Failed"
 
 def save_frame_as_proof(frame, filename_prefix):
     # Convert the frame to grayscale
@@ -92,7 +101,7 @@ def save_frame_as_proof(frame, filename_prefix):
     return filename
 
 def preprocess(frame):
-    size = (224, 224)  # Common input size for CNNs
+    size = (224, 224)  # Adjust size if different for your model
 
     # Resize the image
     frame_resized = cv2.resize(frame, size)
@@ -103,7 +112,7 @@ def preprocess(frame):
     # Convert the RGB image to a PyTorch tensor
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],  # Standard normalization for pre-trained on ImageNet
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],  # Confirm these values for your model
                              std=[0.229, 0.224, 0.225])
     ])
 
@@ -114,6 +123,7 @@ def preprocess(frame):
     input_tensor = input_tensor.unsqueeze(0)
 
     return input_tensor
+
 
 def get_head_pose(frame, model):
     
@@ -154,11 +164,15 @@ def main():
                 
                 # Model prediction
                 with torch.no_grad():
-                    output = model(input_tensor)
+                    predictions = model(input_tensor)
+                    yaw, pitch, roll = predictions[:, 0], predictions[:, 1], predictions[:, 2]  # Assuming the model outputs in this format
+
                 
                 results.append({
                     "timestamp": datetime.datetime.now().isoformat(),
-                    "output": output.tolist()  # Assuming output is tensor, convert to list
+                    "yaw": yaw,
+                    "pitch": pitch,
+                    "roll": roll
                 })
                 
                 

@@ -11,6 +11,11 @@ import numpy as np
 from ScoringModel import CheatingRiskAgent
 import sqlite3
 from flask import g
+import json
+import main
+
+FEEDBACK_FILE = 'feedback.json'
+DETAILED_FEEDBACK_FILE = 'detailed_feedback.json'
 
 agent = CheatingRiskAgent()
 app = Flask(__name__)
@@ -25,6 +30,15 @@ def get_db():
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
+
+@app.route('/api/log-data')
+def log_data():
+    image_directory = os.path.join(app.root_path, 'Eye-Tracker')
+    image_files = [f for f in os.listdir(image_directory) if f.endswith('.jpg')]
+    image_files.sort(reverse=True)  # Assuming you want the most recent files first
+    log_data = [{'image_file': file, 'timestamp': file.split('_')[1].split('.')[0]} for file in image_files]
+    return jsonify({'success': True, 'logs': log_data})
+
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -109,7 +123,16 @@ def get_analysis():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-
+@app.route('/get-dqn-analysis', methods=['GET'])
+def get_dqn_analysis():
+    try:
+        with open("dqn_agent_analysis.json", "r") as analysis_file:
+            analysis_data = json.load(analysis_file)
+        analysis_string = ", ".join([f"{k}: {v}" for k, v in analysis_data.items()])
+        return jsonify({"success": True, "analysis": analysis_string})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+    
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -127,6 +150,74 @@ def login():
             # If authentication fails, redirect back to login page with error message
             return render_template('login.html', error='Invalid username or password.')
     return render_template('login.html')
+
+@app.route('/images/<path:filename>')
+def send_image(filename):
+    return send_from_directory('Eye-Tracker', filename)
+
+
+
+
+@app.route('/logs/<username>')
+def get_user_logs(username):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT log_content, image_filename FROM user_logs WHERE username=?", (username,))
+        logs = [{'log': row[0], 'image': row[1]} for row in cursor.fetchall()]
+        return jsonify({'success': True, 'logs': logs})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/parse-webcam-logs')
+def parse_webcam_logs():
+    # Run the background task
+    main.run_once() 
+    log_path = os.path.join(app.root_path, 'Eye-Tracker', 'webcam_log.txt')
+    image_files = []
+    try:
+        with open(log_path, 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                if "Proof Frame:" in line:
+                    parts = line.split('Proof Frame: ')
+                    if len(parts) > 1:
+                        filename_with_path = parts[1].strip()
+                        filename = os.path.basename(filename_with_path)  # Extract filename only
+                        image_files.append(filename)
+        return jsonify({'success': True, 'images': image_files})
+    except FileNotFoundError:
+        return jsonify({'success': False, 'error': 'Log file not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+def save_feedback(data, filename):
+    if not os.path.isfile(filename):
+        with open(filename, 'w') as f:
+            json.dump([], f)
+    with open(filename, 'r+') as f:
+        feedback_list = json.load(f)
+        feedback_list.append(data)
+        f.seek(0)
+        json.dump(feedback_list, f, indent=4)
+
+@app.route('/dqn_feedback', methods=['POST'])
+def dqn_feedback():
+    data = request.get_json()
+    feedback = {
+        'feedback': data.get('feedback'),
+        'frame_index': data.get('frame_index')
+    }
+    save_feedback(feedback, FEEDBACK_FILE)
+    return jsonify({'success': True})
+
+@app.route('/dqn_detailed_feedback', methods=['POST'])
+def dqn_detailed_feedback():
+    feedback = {
+        'face_position': request.form.get('face_position')
+    }
+    save_feedback(feedback, DETAILED_FEEDBACK_FILE)
+    return jsonify({'success': True})
 
 if __name__ == "__main__":
     app.run(debug=True)
