@@ -1,5 +1,5 @@
 # Cheating-Surveillance
-A Programming Lab Cheating Surveillance Software That Uses Keystroke/Mouse/Webcam Sequences To Detect Possible Cheating Scenarios In a Lab Exam Setting Using MT-Convulutional Nueral Networks and Reinforcement Learning Agents including DQNs
+A Programming Lab Cheating Surveillance Software That Uses Keystroke/Mouse/Webcam Sequences To Detect Possible Cheating Scenarios In a Lab Exam Setting Using MT-Cascaded Nueral Networks, Reinforcement Learning Agents and Deep Q-Networks
 
 Reminder = Requires External Download of CMake in the System
 
