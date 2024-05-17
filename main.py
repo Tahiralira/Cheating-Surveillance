@@ -17,6 +17,8 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import json
+import requests
+import pyautogui
 
 FEEDBACK_FILE = 'feedback.json'
 DETAILED_FEEDBACK_FILE = 'detailed_feedback.json'
@@ -45,7 +47,7 @@ class DQNAgent:
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.95  # discount rate
+        self.gamma = 0.90  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
@@ -75,7 +77,10 @@ class DQNAgent:
             if action < len(target_f):
                 target_f[action] = target
             else:
-                print(f"Action index {action} is out of bounds for target_f with size {len(target_f)}")
+                # Resize target_f to accommodate the maximum action index
+                target_f = np.pad(target_f, (0, action - len(target_f) + 1), mode='constant', constant_values=0)
+                target_f[action] = target
+                #print(f"Action index {action} is out of bounds for target_f with size {len(target_f)}")
                 continue
             self.model.zero_grad()
             outputs = self.model(torch.FloatTensor(state))
@@ -84,7 +89,51 @@ class DQNAgent:
             self.optimizer.step()
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+            
+    def retrain_with_feedback(self, feedback_data):
+        for feedback in feedback_data['feedback']:
+            state = [int(feedback['frame_index'])]
+            action = 0 if feedback['feedback'] == 'yes' else 1
+            reward = 1 if feedback['feedback'] == 'yes' else -1
+            next_state = state
+            done = True
+            self.memorize(state, action, reward, next_state, done)
 
+        action_mapping = {
+            "looking_at_screen": 0,
+            "looking_at_right": 1,
+            "looking_at_left": 2,
+            "looking_down_mobile": 3,
+            "no_face_using_mobile": 4
+        }
+        for detailed_feedback in feedback_data['detailed_feedback']:
+            state = [int(detailed_feedback.get('frame_index', 0))]  # Use default value if frame_index is missing
+            face_position = detailed_feedback.get('face_position')
+            if face_position not in action_mapping:
+                print(f"Invalid face position: {face_position}")
+                continue
+            action = action_mapping[face_position]
+            reward = 1 if face_position == "looking_at_screen" else -1
+            next_state = state
+            done = True
+            self.memorize(state, action, reward, next_state, done)
+
+        batch_size = min(len(self.memory), 32)  # Ensure batch size doesn't exceed memory size
+        self.replay(batch_size)
+
+    def get_latest_dqn_analysis(self):
+        analysis = {}
+
+        # Get the predicted actions for different states
+        analysis['predicted_actions'] = {}
+        for state_index in range(self.state_size):
+            state = [state_index]
+            predicted_action = self.act(state)
+            analysis['predicted_actions'][state_index] = predicted_action
+
+        # Compute other analysis metrics if needed
+
+        return analysis
 app_data_dir = os.getenv('APPDATA')
 
 # Define the directory name to store log files
@@ -120,7 +169,7 @@ def insert_data_into_db(user, keystroke_log_file, window_tab_log_file, cam_log_f
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO user_logs (user, keystroke_log, window_log, cam_log)
+                INSERT INTO user_logs (user, keystroke_log, window_tab_log, cam_log)
                 VALUES (?, ?, ?, ?)
             ''', (user, keystroke_log, window_tab_log, cam_log))
             conn.commit()
@@ -198,101 +247,108 @@ def save_frame_as_proof(frame, filename_prefix):
     return filepath
 
 def main():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    mtcnn = MTCNN(device=device)
-    state_size = 1
-    action_size = 4
-    agent = DQNAgent(state_size, action_size)
-
-    feedback_data = load_feedback(FEEDBACK_FILE)
-    detailed_feedback_data = load_feedback(DETAILED_FEEDBACK_FILE)
-
-    for feedback in feedback_data:
-        frame_index = feedback.get('frame_index')
-        if frame_index is None:
-            print("Invalid feedback data: 'frame_index' is missing or None.")
-            continue
-        state = [int(frame_index)]
-        action = 0 if feedback['feedback'] == 'yes' else 1
-        reward = 1 if feedback['feedback'] == 'yes' else -1
-        next_state = state
-        done = True
-        agent.memorize(state, action, reward, next_state, done)
-
-    for detailed_feedback in detailed_feedback_data:
-        frame_index = detailed_feedback.get('frame_index')
-        if frame_index is None:
-            print("Invalid detailed feedback data: 'frame_index' is missing or None.")
-            continue
-        state = [int(frame_index)]
-        action_mapping = {
-            "looking_at_screen": 0,
-            "looking_at_right": 1,
-            "looking_at_left": 2,
-            "looking_down_mobile": 3,
-            "no_face_using_mobile": 4
-        }
-        face_position = detailed_feedback.get('face_position')
-        if face_position not in action_mapping:
-            print(f"Invalid face position: {face_position}")
-            continue
-        action = action_mapping[face_position]
-        reward = 1 if face_position == "looking_at_screen" else -1
-        next_state = state
-        done = True
-        agent.memorize(state, action, reward, next_state, done)
-
     try:
-        with open("webcam_log.txt", "a", encoding='utf-8') as log_file:
-            while True:
-                wait_time = random.randint(1, 3)
-                print(f"Waiting for {wait_time} seconds...")
-                time.sleep(wait_time)
-                
-                video_capture = WebcamVideoStream(src=0).start()
-                time.sleep(2.0)
-                frame = video_capture.read()
-                
-                position = detect_faces(mtcnn, frame)
-                
-                if position == "Looking at Screen":
-                    state = [0]
-                elif position == "Looking at Right":
-                    state = [1]
-                elif position == "Looking at Left":
-                    state = [2]
-                elif position == "Looking Down/Mobile Possible":
-                    state = [3]
-                else:
-                    state = [4]
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        mtcnn = MTCNN(keep_all=True, device=device, post_process=False)
+        
+        state_size = 1
+        action_size = 4
+        agent = DQNAgent(state_size, action_size)
 
-                action = agent.act(state)
-                reward = 1 if position == "Looking at Screen" else -1
-                next_state = state
-                
-                agent.memorize(state, action, reward, next_state, False)
-                if len(agent.memory) > 32:
-                    agent.replay(32)
-                
-                dqn_agent_analysis['Looking at Screen'] = agent.model(torch.FloatTensor([0])).detach().numpy().tolist()
-                dqn_agent_analysis['Looking at Right'] = agent.model(torch.FloatTensor([1])).detach().numpy().tolist()
-                dqn_agent_analysis['Looking at Left'] = agent.model(torch.FloatTensor([2])).detach().numpy().tolist()
-                dqn_agent_analysis['Looking Down/Mobile Possible'] = agent.model(torch.FloatTensor([3])).detach().numpy().tolist()
-                dqn_agent_analysis['No Face/Using Mobile'] = agent.model(torch.FloatTensor([4])).detach().numpy().tolist()
+        feedback_data = load_feedback(FEEDBACK_FILE)
+        detailed_feedback_data = load_feedback(DETAILED_FEEDBACK_FILE)
 
-                with open("dqn_agent_analysis.json", "w") as dqn_analysis_file:
-                    json.dump(dqn_agent_analysis, dqn_analysis_file)
-                
-                cv2.putText(frame, f"Position: {position}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                proof_filename = save_frame_as_proof(frame, "proof")
-                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                
-                with open(WEBCAM_LOG_FILE, "a", encoding='utf-8') as log_file:
-                    log_file.write(f"Timestamp: {timestamp}, Position: {position}, Proof Frame: {proof_filename}\n")
-                
-                time.sleep(1)
-                cv2.destroyAllWindows()
-                video_capture.stop()
+        for feedback in feedback_data:
+            frame_index = feedback.get('frame_index')
+            if frame_index is None:
+                print("Invalid feedback data: 'frame_index' is missing or None.")
+                continue
+            state = [int(frame_index)]
+            action = 0 if feedback['feedback'] == 'yes' else 1
+            reward = 1 if feedback['feedback'] == 'yes' else -1
+            next_state = state
+            done = True
+            agent.memorize(state, action, reward, next_state, done)
+
+        for detailed_feedback in detailed_feedback_data:
+            #frame_index = detailed_feedback.get('frame_index')
+            #if frame_index is None:
+            # print("Invalid detailed feedback data: 'frame_index' is missing or None.")
+            # continue
+            state = [int(frame_index)]
+            action_mapping = {
+                "looking_at_screen": 0,
+                "looking_at_right": 1,
+                "looking_at_left": 2,
+                "looking_down_mobile": 3,
+                "no_face_using_mobile": 4
+            }
+            face_position = detailed_feedback.get('face_position')
+            if face_position not in action_mapping:
+                print(f"Invalid face position: {face_position}")
+                continue
+            action = action_mapping[face_position]
+            reward = 1 if face_position == "looking_at_screen" else -1
+            next_state = state
+            done = True
+            agent.memorize(state, action, reward, next_state, done)
+            # Load feedback data from JSON files
+            feedback_data = {
+                'feedback': load_feedback(FEEDBACK_FILE),
+                'detailed_feedback': load_feedback(DETAILED_FEEDBACK_FILE)
+            }
+            # Retrain DQN agent using the feedback data
+            agent.retrain_with_feedback(feedback_data)
+            with open("webcam_log.txt", "a", encoding='utf-8') as log_file:
+                while True:
+                    wait_time = random.randint(1, 3)
+                    print(f"Waiting for {wait_time} seconds...")
+                    time.sleep(wait_time)
+                    
+                    video_capture = WebcamVideoStream(src=0).start()
+                    time.sleep(2.0)
+                    frame = video_capture.read()
+                    
+                    position = detect_faces(mtcnn, frame)
+                    
+                    if position == "Looking at Screen":
+                        state = [0]
+                    elif position == "Looking at Right":
+                        state = [1]
+                    elif position == "Looking at Left":
+                        state = [2]
+                    elif position == "Looking Down/Mobile Possible":
+                        state = [3]
+                    else:
+                        state = [4]
+
+                    action = agent.act(state)
+                    reward = 1 if position == "Looking at Screen" else -1
+                    next_state = state
+                    
+                    agent.memorize(state, action, reward, next_state, False)
+                    if len(agent.memory) > 32:
+                        agent.replay(32)
+                    
+                    dqn_agent_analysis['Looking at Screen'] = agent.model(torch.FloatTensor([0])).detach().numpy().tolist()
+                    dqn_agent_analysis['Looking at Right'] = agent.model(torch.FloatTensor([1])).detach().numpy().tolist()
+                    dqn_agent_analysis['Looking at Left'] = agent.model(torch.FloatTensor([2])).detach().numpy().tolist()
+                    dqn_agent_analysis['Looking Down/Mobile Possible'] = agent.model(torch.FloatTensor([3])).detach().numpy().tolist()
+                    dqn_agent_analysis['No Face/Using Mobile'] = agent.model(torch.FloatTensor([4])).detach().numpy().tolist()
+
+                    with open("dqn_agent_analysis.json", "w") as dqn_analysis_file:
+                        json.dump(dqn_agent_analysis, dqn_analysis_file)
+                    
+                    cv2.putText(frame, f"Position: {position}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    proof_filename = save_frame_as_proof(frame, "proof")
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                    
+                    with open(WEBCAM_LOG_FILE, "a", encoding='utf-8') as log_file:
+                        log_file.write(f"Timestamp: {timestamp}, Position: {position}, Proof Frame: {proof_filename}\n")
+                    
+                    time.sleep(1)
+                    cv2.destroyAllWindows()
+                    video_capture.stop()
 
     except KeyboardInterrupt:
         print("Exiting...")
@@ -355,6 +411,44 @@ def check_clipboard():
                     f"{time.strftime('%Y-%m-%d %H:%M:%S')} - Clipboard: {clipboard_content}\n")
         time.sleep(1)
 
+def show_popup_with_logo(logo_url, popup_text):
+    # Download the logo image from the URL
+    response = requests.get(logo_url)
+    logo_data = response.content
+
+    # Convert the logo image data to a numpy array
+    nparr = np.frombuffer(logo_data, np.uint8)
+    logo_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Resize the logo image to a smaller size
+    logo_img_resized = cv2.resize(logo_img, (200, 100))  # Adjust dimensions as needed
+
+    # Get the screen width and height
+    screen_width, screen_height = pyautogui.size()
+
+    # Create a blank popup window
+    popup_width, popup_height = 400, 300  # Adjust dimensions as needed
+    popup = np.zeros((popup_height, popup_width, 3), dtype=np.uint8)
+
+    # Calculate position to center the logo image
+    x_offset = (popup_width - logo_img_resized.shape[1]) // 2
+    y_offset = (popup_height - logo_img_resized.shape[0]) // 2
+
+    # Calculate position to center the popup window
+    popup_x = (screen_width - popup_width) // 2
+    popup_y = (screen_height - popup_height) // 2
+
+    # Insert the resized logo image into the popup window
+    popup[y_offset:y_offset+logo_img_resized.shape[0], x_offset:x_offset+logo_img_resized.shape[1]] = logo_img_resized
+
+    # Display the popup window with the provided text
+    cv2.imshow("Ai Cheating Surveillance", popup)
+    cv2.moveWindow("Ai Cheating Surveillance", popup_x, popup_y)  # Move the window to center of the screen
+    cv2.putText(popup, popup_text, (10, popup_height - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+    cv2.waitKey(5000)  # Display the popup for 5 seconds
+    cv2.destroyAllWindows()
+
+
 def log_active_window_change():
     previous_active_window = None
 
@@ -369,19 +463,22 @@ def log_active_window_change():
         time.sleep(1)
 
 if __name__ == "__main__":
+    logo_url = "https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu"  
+    popup_text = "Cheating Surveillance Is Now Active"
+    show_popup_with_logo(logo_url, popup_text)
     threads = []
     threads.append(threading.Thread(target=main))
     threads.append(threading.Thread(target=keyboard.on_press, args=(on_press,)))
     threads.append(threading.Thread(target=log_active_window_change))
     threads.append(threading.Thread(target=monitor_clipboard))
     threads.append(threading.Thread(target=check_clipboard))
-    print(f"Feedback file path: {FEEDBACK_FILE}")
-    print(f"Detailed feedback file path: {DETAILED_FEEDBACK_FILE}")
-    print(f"Database file path: {DATABASE}")
-    print(f"Log directory path: {log_dir}")
-    print(f"Keystroke log file path: {KEYSTROKE_LOG_FILE}")
-    print(f"Window log file path: {WINDOW_LOG_FILE}")
-    print(f"Webcam log file path: {WEBCAM_LOG_FILE}")
+    #print(f"Feedback file path: {FEEDBACK_FILE}")
+   # print(f"Detailed feedback file path: {DETAILED_FEEDBACK_FILE}")
+    #print(f"Database file path: {DATABASE}")
+   # print(f"Log directory path: {log_dir}")
+    #print(f"Keystroke log file path: {KEYSTROKE_LOG_FILE}")
+   # print(f"Window log file path: {WINDOW_LOG_FILE}")
+   # print(f"Webcam log file path: {WEBCAM_LOG_FILE}")
 
     for thread in threads:
         thread.daemon = True
@@ -392,6 +489,4 @@ if __name__ == "__main__":
             time.sleep(1)
     except KeyboardInterrupt:
         insert_data_into_db(logged_in_user, KEYSTROKE_LOG_FILE, WINDOW_LOG_FILE, WEBCAM_LOG_FILE)
-        conn.close()
-        cursor.close()
         print("Exiting...")

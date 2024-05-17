@@ -3,7 +3,7 @@
 #     return send_from_directory('Eye-Tracker', filename)
 
 
-from flask import Flask, jsonify, send_from_directory, render_template, request, session, url_for, redirect
+from flask import Flask, jsonify, send_from_directory, render_template, request, session, url_for, redirect, send_file
 import os
 from flask_cors import CORS
 import ScoringModel
@@ -13,6 +13,13 @@ import sqlite3
 from flask import g
 import json
 import main
+from main import DQNAgent
+import webbrowser
+from threading import Timer
+
+state_size = 1
+action_size = 4
+dqnagent = DQNAgent(state_size, action_size)
 
 FEEDBACK_FILE = 'feedback.json'
 DETAILED_FEEDBACK_FILE = 'detailed_feedback.json'
@@ -57,38 +64,35 @@ def homepage():
 def log_viewer(user):
     return render_template('log_viewer.html', user=user)
 
-@app.route('/keylogs/<username>')
-def get_key_logs(username):
+@app.route('/keylogs')
+def get_key_logs():
     try:
-        # Fetch keystroke logs for the selected user from the database
-        cursor = get_db().cursor()  # Define the cursor variable
-        cursor.execute("SELECT keystroke_log FROM user_logs WHERE user=?", (username,))
-        logs = cursor.fetchone()[0]
+        filepath = os.path.join(os.getenv('APPDATA'), 'KeystrokeLogger', 'user_keystroke_log.txt')
+        with open(filepath, 'r', encoding='utf-8', errors='replace') as file:
+            logs = file.read()
         return jsonify({'data': logs})
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/mouselogs/<username>')
-def get_mouse_logs(username):
+@app.route('/mouselogs')
+def get_mouse_logs():
     try:
-        # Fetch keystroke logs for the selected user from the database
-        cursor = get_db().cursor()  # Define the cursor variable
-        cursor.execute("SELECT window_tab_log FROM user_logs WHERE user=?", (username,))
-        logs = cursor.fetchone()[0]
+        filepath = os.path.join(os.getenv('APPDATA'), 'KeystrokeLogger', 'user_window_log.txt')
+        with open(filepath, 'r', encoding='utf-8', errors='replace') as file:
+            logs = file.read()
         return jsonify({'data': logs})
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/camlogs/<username>')
-def get_cam_logs(username):
+@app.route('/camlogs')
+def get_cam_logs():
     try:
-        # Fetch keystroke logs for the selected user from the database
-        cursor = get_db().cursor()  # Define the cursor variable
-        cursor.execute("SELECT cam_log FROM user_logs WHERE user=?", (username,))
-        logs = cursor.fetchone()[0]
+        filepath = os.path.join(os.getenv('APPDATA'), 'KeystrokeLogger', 'user_webcam_log.txt')
+        with open(filepath, 'r', encoding='utf-8', errors='replace') as file:
+            logs = file.read()
         return jsonify({'data': logs})
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/score/<username>')
 def score_page(username):
@@ -191,6 +195,32 @@ def parse_webcam_logs():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/dqn_feedback', methods=['POST'])
+def dqn_feedback():
+    try:
+        data = request.get_json()
+        feedback = {
+            'feedback': data.get('feedback'),
+            'frame_index': data.get('frame_index')
+        }
+        save_feedback(feedback, FEEDBACK_FILE)
+        update_dqn_analysis()  # Update DQN analysis after feedback submission
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/dqn_detailed_feedback', methods=['POST'])
+def dqn_detailed_feedback():
+    try:
+        feedback = {
+            'face_position': request.form.get('face_position')
+        }
+        save_feedback(feedback, DETAILED_FEEDBACK_FILE)
+        update_dqn_analysis()  # Update DQN analysis after detailed feedback submission
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 def save_feedback(data, filename):
     if not os.path.isfile(filename):
         with open(filename, 'w') as f:
@@ -200,24 +230,29 @@ def save_feedback(data, filename):
         feedback_list.append(data)
         f.seek(0)
         json.dump(feedback_list, f, indent=4)
+        
+def load_feedback_data(feedback_file, detailed_feedback_file):
+    feedback_data = {'feedback': [], 'detailed_feedback': []}
+    with open(feedback_file, 'r') as f:
+        feedback_data['feedback'] = json.load(f)
+    with open(detailed_feedback_file, 'r') as f:
+        feedback_data['detailed_feedback'] = json.load(f)
+    return feedback_data
 
-@app.route('/dqn_feedback', methods=['POST'])
-def dqn_feedback():
-    data = request.get_json()
-    feedback = {
-        'feedback': data.get('feedback'),
-        'frame_index': data.get('frame_index')
-    }
-    save_feedback(feedback, FEEDBACK_FILE)
-    return jsonify({'success': True})
+def update_dqn_analysis():
+    # Retrain your DQN agent here using feedback data
+    # For example:
+    # Load feedback data from JSON files
+    feedback_data = load_feedback_data(FEEDBACK_FILE, DETAILED_FEEDBACK_FILE)
+    # Retrain DQN agent using the feedback data
+    dqnagent.retrain_with_feedback(feedback_data)
+    # Update DQN analysis based on the retrained agent
+    # For example, get the latest analysis from the retrained agent
+    latest_analysis = dqnagent.get_latest_dqn_analysis()
+    # Save the latest analysis to a file or update it in a database
+    #save_latest_analysis(latest_analysis)
+    
 
-@app.route('/dqn_detailed_feedback', methods=['POST'])
-def dqn_detailed_feedback():
-    feedback = {
-        'face_position': request.form.get('face_position')
-    }
-    save_feedback(feedback, DETAILED_FEEDBACK_FILE)
-    return jsonify({'success': True})
 
 def clear_log_file(file_path):
     try:
@@ -262,8 +297,19 @@ def clear_log(log_type, user):
     else:
         return jsonify({'error': 'Failed to clear log'}), 500
 
+def open_browser():
+    # Open the default web browser with the URL of your Flask app
+    webbrowser.open_new("http://127.0.0.1:5000")
+
+@app.route('/audio')
+def get_audio():
+    # Specify the path to the audio file
+    audio_file_path = 'laser-cannon-science-fiction-sound-9831-[AudioTrimmer.com].mp3'
+    
+    # Send the audio file as a response
+    return send_file(audio_file_path, mimetype='audio/mp3')
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
+    Timer(2, open_browser).start()
+    app.run(debug=True, use_reloader=False)
 

@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cheating Score Analysis</title>
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" type="image/png">
+
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { 
-            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; 
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; 
             padding: 20px; 
-            background-color: #f4f4f9; 
+            background-color: #E6E6FA; /* Set the background color for the entire page */
         }
         h1, h2 { color: #5D3FD3; }
         .btn {
@@ -20,9 +22,35 @@
             color: white;
             background: #472bb9;
         }
+        .login-box {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adding shadow effect */
+            padding: 20px;
+            max-width: 400px; /* Adjust width as needed */
+            margin: 0 auto; /* Center the box horizontally */
+        }
         .container {
-            justify-content: center;
-            align-items: center;
+            position: center; /* Set position to relative for the container */
+        }
+        
+        .navbar-brand {
+            position: absolute; /* Set position to absolute for the logo */
+            top: 50%; /* Position the logo vertically at 50% from the top */
+            left: 50%; /* Position the logo horizontally at 50% from the left */
+            transform: translate(-50%, -50%); /* Adjust position to center the logo */
+            z-index: 1; /* Ensure the logo is above other content */
+        }
+        
+        .navbar-brand img {
+            padding-top: 15px;
+            height: 75px;
+        }
+        .login-title {
+            text-align: center; /* Center align the login title */
+            margin-bottom: 20px; /* Add some bottom margin for spacing */
+            color: #5D3FD3; /* Set color to match the button color */
+            font-weight: bold; /* Make it bold */
         }
     </style>
 </head>
@@ -35,23 +63,27 @@
         </div>
     </nav>
     <div class="container">
-        <form action="{{ url_for('login') }}" method="POST">
-            <h1 class="fw-bold">Login</h1>
-            {% if error %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-            {% endif %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
-            </div>
-            <button type="submit" class="btn">Submit</button>
-        </form>
+        <div class="login-box"> <!-- Wrapper for the login form -->
+            <form action="{{ url_for('login') }}" method="POST">
+                <h1 class="login-title fw-bold">Admin Login</h1> <!-- Updated class for styling -->
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
+                </div>
+                <div class="text-center"> <!-- Center the button -->
+                    <button type="submit" class="btn">Login</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

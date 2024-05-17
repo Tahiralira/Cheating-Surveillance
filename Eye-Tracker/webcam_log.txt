@@ -1,3 +1,11 @@
-Timestamp: 20240514095137, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514095137.jpg
-Timestamp: 20240514095147, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514095147.jpg
-Timestamp: 20240514095155, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514095155.jpg
+Timestamp: 20240515160903, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240513001310.jpg
+Timestamp: 20240515160911, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514040145.jpg
+Timestamp: 20240515183302, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514042028.jpg
+Timestamp: 20240515183310, Position: Looking down/Mobile Usage, Proof Frame: Eye-Tracker/proof_20240512234652.jpg
+Timestamp: 20240515183317, Position: Looking at Right, Proof Frame: Eye-Tracker/proof_20240514032101.jpg
+Timestamp: 20240515183324, Position: Looking down/Mobile Usage, Proof Frame: Eye-Tracker/proof_20240514054654.jpg
+Timestamp: 20240515183332, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514110143.jpg
+Timestamp: 20240515183340, Position: Looking at Left, Proof Frame: Eye-Tracker/proof_20240515183317.jpg
+Timestamp: 20240515203110, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240514114837.jpg
+Timestamp: 20240516005437, Position: Looking at Screen, Proof Frame: Eye-Tracker/proof_20240515183302.jpg
+

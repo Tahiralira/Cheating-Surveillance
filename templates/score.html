@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cheating Score Analysis</title>
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" type="image/png">
+
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { 
@@ -11,7 +13,9 @@
             padding: 20px; 
             background-color: #f4f4f9; 
         }
-        h1, h2 { color: #5D3FD3; }
+        h1, h2 { 
+            color: #5D3FD3;
+            text-align: center; }
         .score { color: #ff4757; font-size: 24px; font-weight: bold; }
         .log-list { background-color: #ffffff; border: 1px solid #ddd; margin-top: 20px; padding: 15px; }
         .log-item { margin-bottom: 10px; }
@@ -29,7 +33,7 @@
             z-index: 1000;
         }
         .risk-level {
-            font-size: 16px;
+            font-size: 20px;
             color: black; /* Normal risk color */
         }
         .highest-risk {
@@ -83,17 +87,44 @@
             width:200px;
             padding: 5px;
         }
-        #feedback-form button{
+        #feedback-form button,
+        .detailed-feedback-form button {
             border: none;
             border-radius: 5px;
             background: #5D3FD3;
             padding: 5px;
             color: white; 
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
         }
+
+        #feedback-form button:hover,
+        .detailed-feedback-form button:hover {
+            background-color: #472bb9;
+        }
+
         .feedback-section {
             display: none; /* Initially hidden */
             margin-top: 10px;
         }
+        .yes-button,
+        .no-button {
+            border: none;
+            border-radius: 5px;
+            background: #5D3FD3;
+            padding: 5px;
+            color: white; 
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .yes-button:hover,
+        .no-button:hover {
+            background-color: #472bb9;
+        }
+
         .modal {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place */
@@ -141,6 +172,30 @@
             color: #ff4757; /* Red for highest value */
             font-weight: bold;
         }
+        .highestt-value {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .low-risk { color: #2ecc71; } /* Green for low risk */
+        .medium-risk { color: #3498db; } /* Blue for medium risk */
+        .high-risk { color: #e74c3c; } /* Red for high risk */
+        .container {
+            position: center; /* Set position to relative for the container */
+        }
+        
+        .navbar-brand {
+            position: absolute; /* Set position to absolute for the logo */
+            top: 50%; /* Position the logo vertically at 50% from the top */
+            left: 50%; /* Position the logo horizontally at 50% from the left */
+            transform: translate(-50%, -50%); /* Adjust position to center the logo */
+            z-index: 1; /* Ensure the logo is above other content */
+        }
+        
+        .navbar-brand img {
+            padding-top: 15px;
+            height: 75px;
+        }
     </style>
 </head>
 <body>
@@ -154,6 +209,7 @@
 <div class="container">
     <h1>Cheating Score Analysis</h1>
     <div class="score" id="cheating-score">Cheating Score: {{ score }}</div>
+    <div class="risk-level" id="risk-level"></div> <!-- New div for displaying risk level -->
     <div class="log-list" id="log-details">
         {% for log in logs %}
         <div class="log-item">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} - {{ log.action }}: {{ log.context }}</div>
@@ -170,6 +226,7 @@
         <button type="submit" id="submit-button">Submit Feedback</button>
     </form>
     <div class="feedback-message" id="feedback-message">Feedback Submitted - Reinforcement Learning Agent is Training</div>
+    
 
     <div class="divider"></div>
     <!-- Modal to display full-size image -->
@@ -181,6 +238,7 @@
 
     <div id="agent-analysis" class="agent-analysis">
         <h3>Agent's Analysis:</h3>
+        <h6>Predicted Risk Level: </h6>
         <p id="analysis-text">No analysis yet.</p>
     </div>
     <div class="button-container">
@@ -251,6 +309,25 @@
         });
     });
     
+    function displayRiskLevel(score) {
+        let riskLevel = '';
+        
+        // Determine the risk level based on score ranges
+        if (score >= 0 && score <= 50) {
+            riskLevel = 'Low';
+            document.getElementById('risk-level').classList.add('low-risk');
+        } else if (score > 50 && score <= 100) {
+            riskLevel = 'Medium';
+            document.getElementById('risk-level').classList.add('medium-risk');
+        } else if (score > 100) {
+            riskLevel = 'High';
+            document.getElementById('risk-level').classList.add('high-risk');
+        }
+
+        // Display the risk level
+        document.getElementById('risk-level').textContent = 'Risk Level: ' + riskLevel;
+    }
+
     document.getElementById('view-frames-btn').addEventListener('click', function() {
         fetch('/parse-webcam-logs')
             .then(response => response.json())
@@ -307,6 +384,7 @@
     
                 // Show feedback section
                 document.getElementById('feedback-section').style.display = 'block';
+                fetchDqnAnalysis();
             })
             .catch(error => console.error('Error fetching images:', error));
     });
@@ -320,23 +398,21 @@
                 const analysisContainer = document.getElementById('dqn-analysis-text');
                 analysisContainer.innerHTML = ''; // Clear previous contents
                 if (data.success) {
-                    const detections = data.analysis.split(', '); // Assuming analysis is separated by comma and space
-                    detections.forEach(detection => {
-                        const parts = detection.split(': ');
-                        const values = parts[1].substring(1, parts[1].length-1).split(', '); // Remove brackets and split by comma
-                        const maxValue = Math.max(...values.map(Number)); // Convert strings to numbers and find max
-                        const detectionDiv = document.createElement('div');
-                        detectionDiv.textContent = `${parts[0]}: `;
-                        values.forEach(value => {
-                            const valueSpan = document.createElement('span');
-                            valueSpan.textContent = `${value}, `;
-                            if (Number(value) === maxValue) {
-                                valueSpan.className = 'highest-value'; // Apply class to highlight max value
-                            }
-                            detectionDiv.appendChild(valueSpan);
-                        });
-                        detectionDiv.lastChild.textContent = detectionDiv.lastChild.textContent.slice(0, -2); // Remove the last comma for cleaner formatting
-                        analysisContainer.appendChild(detectionDiv);
+                    const analysisData = data.analysis; // Assuming analysis data is in JSON format
+                    const sentences = analysisData.split('],'); // Split by sentence endings
+                    sentences.forEach((sentence, index) => {
+                        const analysisDiv = document.createElement('div');
+                        if (index !== sentences.length - 1) {
+                            sentence += ']'; // Add the closing bracket back except for the last sentence
+                        }
+                        const values = sentence.match(/[-]{0,1}[\d]*[.]{0,1}[\d]+/g); // Extract numerical values
+                        if (values && values.length > 0) {
+                            let maxNumber = Math.max(...values.map(parseFloat)); // Find the highest numerical value
+                            // Highlight the highest numerical value in blue
+                            sentence = sentence.replace(new RegExp(maxNumber, 'g'), `<span class="highestt-value">${maxNumber}</span>`);
+                        }
+                        analysisDiv.innerHTML = sentence;
+                        analysisContainer.appendChild(analysisDiv);
                     });
                 } else {
                     analysisContainer.textContent = 'Failed to load analysis.';
@@ -347,19 +423,30 @@
                 analysisContainer.textContent = 'Error loading analysis.';
             });
     }
+    
+    
     document.addEventListener('DOMContentLoaded', function() {
         var modal = document.getElementById("imageModal");
         var modalImg = document.getElementById("fullSizeImage");
         var captionText = document.getElementById("caption");
         var span = document.getElementsByClassName("close")[0];
-    
+        
         // Function to open the modal
         function openModal(imageSrc, altText) {
             modal.style.display = "block";
             modalImg.src = imageSrc;
             captionText.textContent = altText;
         }
-    
+        const scoreElement = document.getElementById('cheating-score');
+        const scoreText = scoreElement.textContent.trim().split(' ')[2]; // Assuming the format is "Cheating Score: {score}"
+        const score = parseFloat(scoreText);
+
+        if (!isNaN(score)) {
+            displayRiskLevel(score);
+        } else {
+        console.error('Invalid score:', scoreText);
+        // Handle the case where the score is not a valid number
+    }
         // Function to close the modal
         span.onclick = function() {
             modal.style.display = "none";
@@ -425,15 +512,18 @@
                     if (data.success) {
                         alert('Detailed feedback submitted!');
                         form.style.display = 'none';
-                        form.closest('.frame-container').querySelector('.output-correct-text').style.display = 'none'; // Hide the "Is this output correct?" line
+                        form.closest('.feedback-section').querySelector('#output-correct-text').style.display = 'none';
                         return fetchDqnAnalysis();
                     } else {
                         throw new Error('Detailed feedback submission failed');
+
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error submitting detailed feedback');
+                    /*alert('Error submitting detailed feedback');*/
+                    form.style.display = 'none';
+                    form.closest('.feedback-section').querySelector('#output-correct-text').style.display = 'none';
                 });
             }
         });

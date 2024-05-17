@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Viewer - {{ user }}</title>
+    <title>Log Viewer</title>
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" type="image/png">
+    
+    <audio id="loader-sound" preload="auto"></audio>
+    
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
@@ -15,42 +19,7 @@
         }
         h1 {
             color: #5D3FD3;
-        }
-        .form-control {
-            position: relative;
-            margin-bottom: 20px;
-            background-color: #fff;
-            --width-of-input: 100%;
-            --border-height: 2px;
-            --border-before-color: rgba(255, 255, 255, 0.7);
-            --border-after-color: #37FF8B;
-        }
-        .input {
-            color: #fff;
-            font-size: 0.9rem;
-            background-color: transparent;
-            width: var(--width-of-input);
-            box-sizing: border-box;
-            padding-inline: 0.5em;
-            padding-block: 0.7em;
-            border: none;
-            border-bottom: var(--border-height) solid var(--border-before-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .input-border {
-            position: absolute;
-            background: var(--border-after-color);
-            width: 0%;
-            height: var(--border-height);
-            bottom: 0;
-            left: 0;
-            transition: width 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-        }
-        .input:focus {
-            outline: none;
-        }
-        .input:focus + .input-border {
-            width: 100%;
+            text-align: center;
         }
         .button-container {
             text-align: center;
@@ -64,7 +33,7 @@
             background-color: #5D3FD3; 
             color: white; 
             font-size: 1em;
-            font-weight:bold;
+            font-weight: bold;
             text-transform: uppercase;
             transition: background-color 0.3s;
         }
@@ -93,49 +62,188 @@
         .analyze-button-container .button {
             margin-left: 30px;
         }
+        .container {
+            position: center; /* Set position to relative for the container */
+        }
+        
+        .navbar-brand {
+            position: absolute; /* Set position to absolute for the logo */
+            top: 50%; /* Position the logo vertically at 50% from the top */
+            left: 50%; /* Position the logo horizontally at 50% from the left */
+            transform: translate(-50%, -50%); /* Adjust position to center the logo */
+            z-index: 1; /* Ensure the logo is above other content */
+        }
+        
+        .navbar-brand img {
+            padding-top: 15px;
+            height: 75px;
+        }
+        .pyramid-loader {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: block;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg);
+          }
+          
+          .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: spin 4s linear infinite;
+          }
+          
+          @keyframes spin {
+            100% {
+              transform: rotateY(360deg);
+            }
+          }
+          
+          .pyramid-loader .wrapper .side {
+            width: 70px;
+            height: 70px;
+          /* you can choose any gradient or color you want */
+            /* background: radial-gradient( #2F2585 10%, #F028FD 70%, #2BDEAC 120%); */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            transform-origin: center top;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+          }
+          
+          .pyramid-loader .wrapper .side1 {
+            transform: rotateZ(-30deg) rotateY(90deg);
+            background: conic-gradient( #2BDEAC, #F028FD, #D8CCE6, #2F2585);
+          }
+          
+          .pyramid-loader .wrapper .side2 {
+            transform: rotateZ(30deg) rotateY(90deg);
+            background: conic-gradient( #2F2585, #D8CCE6, #F028FD, #2BDEAC);
+          }
+          
+          .pyramid-loader .wrapper .side3 {
+            transform: rotateX(30deg);
+            background: conic-gradient( #2F2585, #D8CCE6, #F028FD, #2BDEAC);
+          }
+          
+          .pyramid-loader .wrapper .side4 {
+            transform: rotateX(-30deg);
+            background: conic-gradient( #2BDEAC, #F028FD, #D8CCE6, #2F2585);
+          }
+          
+          .pyramid-loader .wrapper .shadow {
+            width: 60px;
+            height: 60px;
+            background: #8B5AD5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            transform: rotateX(90deg) translateZ(-40px);
+            /* Remove the blur effect */
+            /* filter: blur(12px); */
+        }
+        
+          #loader-overlay .pyramid-loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #loader-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+        .loader-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: block;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg);
+        }
     </style>
 </head>
 <body>
     <nav class="navbar bg-body-tertiary mb-4">
         <div class="container mb-5">
-          <a class="navbar-brand" href="#">
-            <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" height="100">
-          </a>
+            <a class="navbar-brand" href="#">
+                <img src="https://lh3.googleusercontent.com/d/1zOUoYGbMePnFgqRF_rbkAlPWQEgzNkNu" height="100">
+            </a>
         </div>
-      </nav>
-      <div class="container">
-    <h1>Log Viewer - {{ user }}</h1>
-    <div class="button-container">
-        <div class="button" id="load-keylogs-btn">
-            <span class="hover-text">Load Keyboard Logs</span>
-        </div>        
-        <div class="button" id="load-mouselogs-btn">
-            <span class="hover-text">Load Mouse Logs</span>
+    </nav>
+    <div class="container">
+        <h1>Log Viewer - {{ user }}</h1>
+        <div class="button-container">
+            <div class="button" id="load-keylogs-btn">
+                <span class="hover-text">Load Keyboard Logs</span>
+            </div>
+            <div class="button" id="load-mouselogs-btn">
+                <span class="hover-text">Load Mouse Logs</span>
+            </div>
+            <div class="button" id="load-camlogs-btn">
+                <span class="hover-text">Load Webcam Logs</span>
+            </div>
+            <div class="button" id="clear-log-btn">
+                <span class="hover-text">Clear Log</span>
+            </div>
         </div>
-        <div class="button" id="load-camlogs-btn">
-            <span class="hover-text">Load Webcam Logs</span>
-        </div>
-        <div class="button" id="clear-log-btn">
-            <span class="hover-text">Clear Log</span>
+
+        <pre id="log-data">Please select a log type to display.</pre>
+
+        <div class="divider"></div>
+
+        <div class="analyze-button-container">
+            <div class="button" onclick="analyzeLogs()">Analyze Logs</div>
         </div>
     </div>
-
-    <pre id="log-data">Please select a log type to display.</pre>
-    
-    <div class="divider"></div>
-
-    <div class="analyze-button-container">
-        <div class="button" onclick="analyzeLogs()">Analyze Logs</div>
+    <div id="loader-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 100;">
+        <div class="pyramid-loader">
+            <div class="wrapper">
+                <span class="side side1"></span>
+                <span class="side side2"></span>
+                <span class="side side3"></span>
+                <span class="side side4"></span>
+                <span class="shadow"></span>
+            </div>
+        </div>
     </div>
-</div>
     <script>
         let currentLogs = '';  // Track which logs are currently being viewed
 
         const fetchLogs = async (url) => {
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.data.split('\n');
+            try {
+                console.log('Fetching logs from:', url);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch logs');
+                }
+                const data = await response.json();
+                console.log('Fetched logs data:', data); // Log the fetched data
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                return data.data.split('\n');
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+                document.getElementById('log-data').textContent = 'Failed to load logs.';
+                throw error;
+            }
         }
+        
 
         const displayLogs = (logs) => {
             const logContainer = document.getElementById('log-data');
@@ -143,61 +251,97 @@
         }
 
         const loadKeyLogs = async () => {
-            const username = '{{ user }}';
-            const response = await fetch(`/keylogs/${username}`);
-            const data = await response.json();
-            const logData = data.data || 'No logs available.';
-            document.getElementById('log-data').textContent = logData;
-            currentLogs = 'keylogs';
+            try {
+                const logs = await fetchLogs('/keylogs');
+                displayLogs(logs);
+                currentLogs = 'keylogs';
+            } catch (error) {
+                console.error('Error loading key logs:', error);
+            }
         }
 
         const loadMouseLogs = async () => {
-            const username = '{{ user }}';
-            const response = await fetch(`/windowlogs/${username}`);
-            const data = await response.json();
-            const logData = data.data || 'No logs available.';
-            document.getElementById('log-data').textContent = logData;
-            currentLogs = 'windowlogs';
+            try {
+                const logs = await fetchLogs('/mouselogs');
+                displayLogs(logs);
+                currentLogs = 'mouselogs';
+            } catch (error) {
+                console.error('Error loading mouse logs:', error);
+            }
         }
+
         const loadWebcamLogs = async () => {
-            const username = '{{ user }}';
-            const response = await fetch(`/camlogs/${username}`);
-            const data = await response.json();
-            const logData = data.data || 'No logs available.';
-            document.getElementById('log-data').textContent = logData;
-            currentLogs = 'camlogs';
+            try {
+                const logs = await fetchLogs('/camlogs');
+                displayLogs(logs);
+                currentLogs = 'camlogs';
+            } catch (error) {
+                console.error('Error loading webcam logs:', error);
+            }
         }
 
         const clearLog = async () => {
-            const username = '{{ user }}';
-            let url;
-            switch (currentLogs) {
-                case 'keylogs':
-                    url = `/clear/keylogs/${username}`;
-                    break;
-                case 'windowlogs':
-                    url = `/clear/windowlogs/${username}`;
-                    break;
-                case 'camlogs':
-                    url = `/clear/camlogs/${username}`;
-                    break;
-                default:
-                    alert('No log type selected to clear.');
-                    return;
-            }
-            const response = await fetch(url, { method: 'DELETE' });
-            if (response.ok) {
-                document.getElementById('log-data').textContent = 'Log cleared.';
-            } else {
+            try {
+                let url;
+                switch (currentLogs) {
+                    case 'keylogs':
+                        url = '/clear/keylogs';
+                        break;
+                    case 'mouselogs':
+                        url = '/clear/mouselogs';
+                        break;
+                    case 'camlogs':
+                        url = '/clear/camlogs';
+                        break;
+                    default:
+                        alert('No log type selected to clear.');
+                        return;
+                }
+                const response = await fetch(url, { method: 'DELETE' });
+                if (response.ok) {
+                    document.getElementById('log-data').textContent = 'Log cleared.';
+                } else {
+                    document.getElementById('log-data').textContent = 'Failed to clear log.';
+                }
+            } catch (error) {
+                console.error('Error clearing log:', error);
                 document.getElementById('log-data').textContent = 'Failed to clear log.';
             }
         }
 
         const analyzeLogs = async () => {
-            const username = '{{ user }}'; 
-            window.location.href = `/score/${username}`;
-            console.log('Logs are being analyzed...');
+            const username = '{{ user }}';
+            // Show loader
+            document.getElementById('loader-overlay').style.display = 'block';
+            // Play loader sound
+            document.getElementById('loader-sound').play();
+            try {
+                // Make AJAX request to Flask route /audio
+                const response = await fetch('/audio');
+                const audioBlob = await response.blob();
+                const audioURL = URL.createObjectURL(audioBlob);
+                // Create an audio element and set its source to the received audio URL
+                const audio = new Audio(audioURL);
+                // Play the audio
+                audio.play();
+                // Simulate delay for demonstration (remove in production)
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                window.location.href = `/score/${username}`;
+                console.log('Logs are being analyzed...');
+            } catch (error) {
+                console.error('Error analyzing logs:', error);
+            } finally {
+                // Hide loader
+                document.getElementById('loader-overlay').style.display = 'none';
+                // Pause loader sound
+                document.getElementById('loader-sound').pause();
+                // Rewind loader sound to start
+                document.getElementById('loader-sound').currentTime = 0;
+            }
         }
+        
+        
+        
 
         document.getElementById('load-keylogs-btn').addEventListener('click', loadKeyLogs);
         document.getElementById('load-mouselogs-btn').addEventListener('click', loadMouseLogs);

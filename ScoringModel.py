@@ -33,7 +33,7 @@ def parse_log_line(line):
         return {'timestamp': timestamp, 'action': action, 'context': context}
         
     except Exception as e:
-        print(f"Error parsing line: {line}. Error: {e}")
+        #print(f"Error parsing line: {line}. Error: {e}")
         return None
 
 def calculate_cheating_score(log_entries):
@@ -138,10 +138,10 @@ class CheatingRiskAgent:
     def get_latest_analysis(self):
         if not self.q_table:
             return "No analysis data available."
-        analysis_summary = "Risk Assessment Analysis:\n"
+        analysis_summary = ""
         for score, values in sorted(self.q_table.items()):
-            risk_levels = ['Low', 'Medium', 'High']
-            analysis_summary += f"Score: {score}, Risk Levels: {', '.join(f'{risk_levels[i]}: {value:.2f}' for i, value in enumerate(values))}\n"
+            risk_levels = ['\nLow', 'Medium', 'High']
+            analysis_summary += f"{', '.join(f'{risk_levels[i]}: {value:.2f}' for i, value in enumerate(values))}\n"
         return analysis_summary
 
 # Initialize agent
